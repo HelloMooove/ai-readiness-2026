@@ -1,0 +1,9 @@
+# Local-only config holding secrets — fill in config.local.js based on config.example.js
+config.local.js
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
