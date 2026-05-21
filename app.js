@@ -2,9 +2,8 @@
    2026 AI Readiness Diagnostic — form logic, scoring, Airtable
    ============================================================= */
 
-// Config is loaded from config.local.js (gitignored). See config.example.js for the shape.
-const AIRTABLE_URL = (window.APP_CONFIG && window.APP_CONFIG.airtableUrl) || '';
-const AIRTABLE_TOKEN = (window.APP_CONFIG && window.APP_CONFIG.airtableToken) || '';
+// The backend serverless function handles the actual Airtable submission
+const SUBMIT_URL = '/api/submit';
 
 const PHASES = {
   1: 'Relationship with AI',
@@ -795,10 +794,9 @@ async function submitForm(btn) {
 
   let serverDetail = '';
   try {
-    const res = await fetch(AIRTABLE_URL, {
+    const res = await fetch(SUBMIT_URL, {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + AIRTABLE_TOKEN,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
