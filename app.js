@@ -466,7 +466,7 @@ function renderIntro() {
       el('span', { class: 'dot-sep' }, '·'),
       el('span', {}, '≈ 4 minutes'),
       el('span', { class: 'dot-sep' }, '·'),
-      el('span', {}, 'Personalized report'),
+      el('span', {}, 'Instant score'),
     ]),
   ]);
 
@@ -707,7 +707,7 @@ function renderContact() {
     buildProgressBar(),
     cardHeader(4, true),
     el('h2', { class: 'q-text' }, 'Almost done.'),
-    el('p', { class: 'intro-msg' }, 'Just a few details so we can send you your personalized AI Readiness Report.'),
+    el('p', { class: 'intro-msg' }, 'Just a few details so we can save your result and show you your AI Readiness score.'),
 
     el('div', { class: 'input-grid' }, [
       field('First Name', 'firstName', 'text', c.firstName, true),
@@ -723,7 +723,7 @@ function renderContact() {
         id: 'submit-btn',
         disabled: !contactValid(),
         onclick: (e) => submitForm(e.currentTarget),
-      }, ['Send my report', arrowSVG()]),
+      }, ['See my score', arrowSVG()]),
     ]),
     el('div', { id: 'submit-error' }),
   ]);
@@ -820,10 +820,10 @@ async function submitForm(btn) {
     console.error(err);
     btn.removeAttribute('disabled');
     btn.innerHTML = '';
-    btn.appendChild(document.createTextNode('Send my report'));
+    btn.appendChild(document.createTextNode('See my score'));
     btn.appendChild(arrowSVG());
 
-    const friendly = 'We could not send your report just yet. Please try again — your answers are safe.';
+    const friendly = 'We could not save your result just yet. Please try again — your answers are safe.';
     errBox.appendChild(el('div', { class: 'error-msg' }, [
       el('div', {}, friendly),
       serverDetail ? el('div', { class: 'error-detail' }, serverDetail) : null,
@@ -863,16 +863,108 @@ function buildAirtablePayload() {
 
 /* ---------- Thank you screen ---------- */
 
+// 2026 framework tier definitions — kept in sync with the GMHR dashboard.
+const TIERS = [
+  {
+    key: 'undecided',
+    label: 'Undecided',
+    icon: '❓',
+    range: '-25 – 9',
+    profile: 'The Hesitant. No clear stance on AI: negative signals (manual work, blocked budgets, decision overload) outweigh adoption signals.',
+    test: (s) => s <= 9,
+  },
+  {
+    key: 'ignition',
+    label: 'Ignition',
+    icon: '🔥',
+    range: '10 – 34',
+    profile: 'The Explorer. Awareness is there, AI is in early use, but practice is still ad-hoc and unstructured.',
+    test: (s) => s >= 10 && s <= 34,
+  },
+  {
+    key: 'momentum',
+    label: 'Momentum',
+    icon: '⚙️',
+    range: '35 – 54',
+    profile: 'The Practical Implementer. Tools are live, training is on the agenda, value is uneven but visible.',
+    test: (s) => s >= 35 && s <= 54,
+  },
+  {
+    key: 'mastery',
+    label: 'Mastery',
+    icon: '🚀',
+    range: '55 – 65',
+    profile: 'The Strategic Architect. AI is embedded, KPIs are tracked live, training is planned; focus is on governance and edge.',
+    test: (s) => s >= 55,
+  },
+];
+
+function tierForScore(score) {
+  return TIERS.find(t => t.test(score)) || TIERS[0];
+}
+
 function renderThanks() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'check-svg');
   svg.setAttribute('viewBox', '0 0 48 48');
   svg.innerHTML = '<path d="M12 24.5l8 8 16-17" />';
 
+  const score = Math.round(state.totalScore);
+  const tier = tierForScore(score);
+
+  const scoreBlock = el('div', { class: `score-block tier-${tier.key}` }, [
+    el('span', { class: 'score-eyebrow' }, 'Your AI Readiness Score'),
+    el('div', { class: 'score-value' }, [
+      el('span', { class: 'score-number' }, String(score)),
+      el('span', { class: 'score-suffix' }, '/ 65'),
+    ]),
+    el('div', { class: 'score-tier' }, [
+      el('span', { class: 'score-tier-icon', 'aria-hidden': 'true' }, tier.icon),
+      el('span', { class: 'score-tier-label' }, tier.label),
+    ]),
+    el('p', { class: 'score-tier-profile' }, tier.profile),
+  ]);
+
+  const tierLegend = el('div', { class: 'tier-legend' }, [
+    el('div', { class: 'tier-legend-header' }, [
+      el('span', { class: 'tier-legend-title' }, 'Tier legend'),
+      el('span', { class: 'tier-legend-sub' }, '4 tiers · 2026 framework'),
+    ]),
+    el('div', { class: 'tier-list' }, TIERS.map(t => (
+      el('div', { class: 'tier-row' + (t.key === tier.key ? ' active' : '') }, [
+        el('span', { class: 'tier-icon', 'aria-hidden': 'true' }, t.icon),
+        el('div', { class: 'tier-meta' }, [
+          el('div', { class: 'tier-meta-top' }, [
+            el('span', { class: 'tier-name' }, t.label),
+            el('span', { class: 'tier-range' }, t.range),
+          ]),
+          el('p', { class: 'tier-profile' }, t.profile),
+        ]),
+      ])
+    ))),
+  ]);
+
+  const compareCard = el('a', {
+    class: 'compare-card',
+    href: 'https://gmhr.vercel.app/',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  }, [
+    el('div', { class: 'compare-text' }, [
+      el('span', { class: 'compare-eyebrow' }, 'Benchmark'),
+      el('span', { class: 'compare-title' }, 'See how you compare to your peers'),
+      el('span', { class: 'compare-sub' }, 'Open the live GMHR AI Readiness dashboard for Mauritius'),
+    ]),
+    el('span', { class: 'compare-arrow', 'aria-hidden': 'true' }, [arrowSVG()]),
+  ]);
+
   const card = el('div', { class: 'card thanks-card stagger' }, [
     el('div', { class: 'check-wrap' }, svg),
-    el('h2', { class: 'thanks-title' }, 'Your AI Readiness Report is on its way!'),
-    el('p', { class: 'thanks-sub' }, 'Our team will be in touch with your personalized results shortly.'),
+    el('h2', { class: 'thanks-title' }, 'Thanks — here is your AI Readiness score.'),
+    el('p', { class: 'thanks-sub' }, 'See where you land on the 2026 framework, then open the dashboard to see how you compare to your peers.'),
+    scoreBlock,
+    tierLegend,
+    compareCard,
   ]);
   renderScreen(card);
 }
@@ -900,5 +992,14 @@ document.addEventListener('keydown', (e) => {
 
 /* ---------- Boot ---------- */
 
-renderIntro();
-setProgress();
+// Dev preview: append ?preview=<score> to jump straight to the thanks screen
+// without going through the form. Example: index.html?preview=42
+const previewMatch = /[?&]preview=(-?\d+)/.exec(window.location.search);
+if (previewMatch) {
+  state.totalScore = parseInt(previewMatch[1], 10);
+  state.currentId = 'thanks';
+  renderThanks();
+} else {
+  renderIntro();
+  setProgress();
+}
