@@ -277,9 +277,21 @@ body {
   gap: 10px 12px;
 }
 
+/* When there's an odd number of options, center the lone trailing option across both columns */
+.options.cols-2 > .option:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 6px);
+}
+
 @media (max-width: 640px) {
   .options.cols-2 {
     grid-template-columns: 1fr;
+  }
+  .options.cols-2 > .option:last-child:nth-child(odd) {
+    grid-column: auto;
+    justify-self: stretch;
+    width: auto;
   }
 }
 
