@@ -584,6 +584,7 @@ function buildAnswerArea(q) {
       type: 'button',
       role: q.type === 'multi' ? 'checkbox' : 'radio',
       'aria-checked': isSelected ? 'true' : 'false',
+      'data-value': opt.value,
       style: `animation-delay:${idx * 60}ms`,
       onclick: () => onOptionClick(q, opt.value),
       onkeydown: (e) => {
@@ -669,17 +670,16 @@ function onOptionClick(q, value) {
 }
 
 function syncOptionSelection(q) {
-  const list = app.querySelector('.options');
-  if (!list) return;
+  const wrap = app.querySelector('.options-wrap');
+  if (!wrap) return;
   const ans = state.answers[q.id];
   const isSel = (val) => q.type === 'multi'
     ? Array.isArray(ans) && ans.includes(val)
     : ans === val;
-  const buttons = list.querySelectorAll('.option');
-  buttons.forEach((btn, i) => {
-    const opt = q.options[i];
-    if (!opt) return;
-    const sel = isSel(opt.value);
+  wrap.querySelectorAll('.option').forEach(btn => {
+    const val = btn.getAttribute('data-value');
+    if (val == null) return;
+    const sel = isSel(val);
     btn.classList.toggle('selected', sel);
     btn.setAttribute('aria-checked', sel ? 'true' : 'false');
   });
