@@ -47,16 +47,25 @@ const QUESTIONS = [
     id: 'q3', phase: 1, text: 'What do you use AI for?', type: 'multi',
     airtableField: 'Q3 - What do you use AI for?',
     hint: 'Select all that apply',
+    columns: 2,
     options: [
-      { value: 'Writing emails and replies', score: 2 },
-      { value: 'Summarizing long meetings', score: 2 },
-      { value: 'Finding info in big files', score: 5 },
-      { value: 'Sorting through job applications', score: 8 },
-      { value: 'Analyzing data and numbers', score: 10 },
-      { value: 'Creating social media posts', score: 2 },
-      { value: 'Writing code or Excel formulas', score: 10 },
-      { value: 'Coming up with new ideas', score: 5 },
-      { value: "I don't use it for work yet", score: 0 },
+      { value: 'Writing emails and documents', score: 2 },
+      { value: 'Summarizing meetings or files', score: 3 },
+      { value: 'Researching information faster', score: 4 },
+      { value: 'Analyzing data and reports', score: 10 },
+      { value: 'Creating presentations or content', score: 3 },
+      { value: 'Generating images or designs', score: 4 },
+      { value: 'Writing code or formulas', score: 10 },
+      { value: 'Brainstorming ideas and strategy', score: 5 },
+      { value: 'Automating repetitive tasks', score: 12 },
+      { value: 'Creating AI workflows or agents', score: 15 },
+      { value: 'Connecting tools and systems', score: 14 },
+      { value: 'Improving customer support', score: 8 },
+      { value: 'Supporting business decisions', score: 10 },
+      { value: 'Building AI-powered applications', score: 18 },
+      { value: 'Experimenting with AI personally', score: 2 },
+      { value: 'Using AI across my organization', score: 20 },
+      { value: "I don't use AI for work yet", score: 0 },
     ],
     next: () => 'q4',
   },
@@ -536,7 +545,7 @@ function buildAnswerArea(q) {
     return el('div', { class: 'textarea-wrap' }, ta);
   }
 
-  const list = el('div', { class: 'options', role: q.type === 'multi' ? 'group' : 'radiogroup' });
+  const list = el('div', { class: 'options' + (q.columns === 2 ? ' cols-2' : ''), role: q.type === 'multi' ? 'group' : 'radiogroup' });
   const selected = q.type === 'multi'
     ? (Array.isArray(state.answers[q.id]) ? state.answers[q.id] : [])
     : (state.answers[q.id] || null);

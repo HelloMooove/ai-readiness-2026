@@ -271,6 +271,18 @@ body {
   gap: 10px;
 }
 
+.options.cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 12px;
+}
+
+@media (max-width: 640px) {
+  .options.cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Option */
 .option {
   display: flex;
