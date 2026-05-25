@@ -3,17 +3,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { AIRTABLE_URL, AIRTABLE_TOKEN } = process.env;
+  const { AIRTABLE_PAT, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;
 
-  if (!AIRTABLE_URL || !AIRTABLE_TOKEN) {
+  if (!AIRTABLE_PAT || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
     return res.status(500).json({ error: 'Server configuration error: Missing Airtable credentials' });
   }
 
+  const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}`;
+
   try {
-    const response = await fetch(AIRTABLE_URL, {
+    const response = await fetch(airtableUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+        'Authorization': `Bearer ${AIRTABLE_PAT}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(req.body),
