@@ -48,25 +48,51 @@ const QUESTIONS = [
     airtableField: 'Q3 - What do you use AI for?',
     hint: 'Select all that apply',
     columns: 2,
-    options: [
-      { value: 'Writing emails and documents', score: 2 },
-      { value: 'Summarizing meetings or files', score: 3 },
-      { value: 'Researching information faster', score: 4 },
-      { value: 'Analyzing data and reports', score: 10 },
-      { value: 'Creating presentations or content', score: 3 },
-      { value: 'Generating images or designs', score: 4 },
-      { value: 'Writing code or formulas', score: 10 },
-      { value: 'Brainstorming ideas and strategy', score: 5 },
-      { value: 'Automating repetitive tasks', score: 12 },
-      { value: 'Creating AI workflows or agents', score: 15 },
-      { value: 'Connecting tools and systems', score: 14 },
-      { value: 'Improving customer support', score: 8 },
-      { value: 'Supporting business decisions', score: 10 },
-      { value: 'Building AI-powered applications', score: 18 },
-      { value: 'Experimenting with AI personally', score: 2 },
-      { value: 'Using AI across my organization', score: 20 },
-      { value: "I don't use AI for work yet", score: 0 },
+    groups: [
+      {
+        title: 'Productivity & personal efficiency',
+        options: [
+          { value: 'Writing emails and documents', score: 2 },
+          { value: 'Summarizing meetings or files', score: 3 },
+          { value: 'Researching information faster', score: 4 },
+          { value: 'Creating presentations or content', score: 3 },
+          { value: 'Generating images or designs', score: 4 },
+          { value: 'Experimenting with AI personally', score: 2 },
+        ],
+      },
+      {
+        title: 'Strategic & analytical work',
+        options: [
+          { value: 'Brainstorming ideas and strategy', score: 5 },
+          { value: 'Analyzing data and reports', score: 10 },
+          { value: 'Supporting business decisions', score: 10 },
+          { value: 'Improving customer support', score: 8 },
+        ],
+      },
+      {
+        title: 'Technical & AI development',
+        options: [
+          { value: 'Writing code or formulas', score: 10 },
+          { value: 'Building AI-powered applications', score: 18 },
+        ],
+      },
+      {
+        title: 'Automation & operational transformation',
+        options: [
+          { value: 'Automating repetitive tasks', score: 12 },
+          { value: 'Creating AI workflows or agents', score: 15 },
+          { value: 'Connecting tools and systems', score: 14 },
+        ],
+      },
+      {
+        title: 'Organizational AI adoption',
+        options: [
+          { value: 'Using AI across my organization', score: 20 },
+          { value: "I don't use AI for work yet", score: 0 },
+        ],
+      },
     ],
+    get options() { return this.groups.flatMap(g => g.options); },
     next: () => 'q4',
   },
   {
@@ -545,17 +571,15 @@ function buildAnswerArea(q) {
     return el('div', { class: 'textarea-wrap' }, ta);
   }
 
-  const list = el('div', { class: 'options' + (q.columns === 2 ? ' cols-2' : ''), role: q.type === 'multi' ? 'group' : 'radiogroup' });
   const selected = q.type === 'multi'
     ? (Array.isArray(state.answers[q.id]) ? state.answers[q.id] : [])
     : (state.answers[q.id] || null);
 
-  q.options.forEach((opt, idx) => {
+  const makeOptionBtn = (opt, idx) => {
     const isSelected = q.type === 'multi'
       ? selected.includes(opt.value)
       : selected === opt.value;
-
-    const btn = el('button', {
+    return el('button', {
       class: 'option' + (isSelected ? ' selected' : ''),
       type: 'button',
       role: q.type === 'multi' ? 'checkbox' : 'radio',
@@ -570,9 +594,24 @@ function buildAnswerArea(q) {
       el('span', { class: 'label' }, opt.value),
       checkSVG(),
     ]);
-    list.appendChild(btn);
-  });
+  };
 
+  const groupClass = q.columns === 2 ? ' cols-2' : '';
+
+  if (Array.isArray(q.groups)) {
+    const wrap = el('div', { class: 'option-groups', role: q.type === 'multi' ? 'group' : 'radiogroup' });
+    let globalIdx = 0;
+    q.groups.forEach(group => {
+      wrap.appendChild(el('div', { class: 'option-group-title' }, group.title));
+      const grid = el('div', { class: 'options' + groupClass });
+      group.options.forEach(opt => grid.appendChild(makeOptionBtn(opt, globalIdx++)));
+      wrap.appendChild(grid);
+    });
+    return el('div', { class: 'options-wrap' }, wrap);
+  }
+
+  const list = el('div', { class: 'options' + groupClass, role: q.type === 'multi' ? 'group' : 'radiogroup' });
+  q.options.forEach((opt, idx) => list.appendChild(makeOptionBtn(opt, idx)));
   return el('div', { class: 'options-wrap' }, list);
 }
 
@@ -872,7 +911,7 @@ function buildAirtablePayload() {
 
 /* ---------- Thank you screen ---------- */
 
-// 2026 framework tier definitions — kept in sync with the GMHR dashboard.
+// 2026 framework tier definitions — kept in sync with the MOOOVE dashboard.
 const TIERS = [
   {
     key: 'undecided',
@@ -962,7 +1001,7 @@ function renderThanks() {
     el('div', { class: 'compare-text' }, [
       el('span', { class: 'compare-eyebrow' }, 'Benchmark'),
       el('span', { class: 'compare-title' }, 'See how you compare to your peers'),
-      el('span', { class: 'compare-sub' }, 'Open the live GMHR AI Readiness dashboard for Mauritius'),
+      el('span', { class: 'compare-sub' }, 'Open the live MOOOVE AI Readiness dashboard for Mauritius'),
     ]),
     el('span', { class: 'compare-arrow', 'aria-hidden': 'true' }, [arrowSVG()]),
   ]);

@@ -284,6 +284,32 @@ body {
   width: calc(50% - 6px);
 }
 
+/* Inside grouped option lists, keep the lone trailing item on the left (no auto-centering) */
+.option-groups .options.cols-2 > .option:last-child:nth-child(odd) {
+  grid-column: auto;
+  justify-self: stretch;
+  width: auto;
+}
+
+/* Category headers for grouped options */
+.option-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.option-group-title {
+  font-family: 'Syne', 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal, #3FB8FF);
+  margin: 18px 0 6px;
+}
+.option-groups > .option-group-title:first-child {
+  margin-top: 6px;
+}
+
 @media (max-width: 640px) {
   .options.cols-2 {
     grid-template-columns: 1fr;
