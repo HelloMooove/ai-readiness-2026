@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { readSupabaseEnv } from '@/lib/supabase/env';
+import { readSupabaseEnv } from './lib/supabase/env';
 
 // Auth middleware:
 //   - Refreshes the Supabase session cookie on every matched request.
