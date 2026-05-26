@@ -678,17 +678,21 @@ body {
 }
 
 /* Intro screen */
-.intro-card { text-align: center; padding: 56px 36px 48px; }
+.intro-card { text-align: center; padding: 56px 36px 48px; position: relative; }
 
-/* Language toggle pill — appears at the top of the intro card only */
+/* Language toggle pill — pinned to the top-right corner of the intro card
+   so it doesn't crowd the centered eyebrow / title block. */
 .lang-toggle {
+  position: absolute;
+  top: 18px;
+  right: 18px;
   display: inline-flex;
   gap: 2px;
   padding: 4px;
-  margin-bottom: 26px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 999px;
+  z-index: 2;
 }
 .lang-btn {
   appearance: none;

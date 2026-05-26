@@ -116,7 +116,7 @@ function t(src) {
 const FR = {
   /* --- Intro --- */
   '2026 · Mauritius': '2026 · Maurice',
-  'The <em>AI Readiness</em> Diagnostic': 'Le diagnostic <em>AI Readiness</em>',
+  'The <em>AI Readiness</em> Diagnostic': 'Diagnostic de <em>Maturité IA</em>',
   'A short, executive-level questionnaire that maps where your organization stands on AI today — and what it would take to thrive in 2026.':
     'Un court questionnaire pour dirigeants qui révèle où votre organisation se situe face à l’IA aujourd’hui, et ce qu’il faudrait pour exceller en 2026.',
   'Start the diagnostic': 'Démarrer le diagnostic',
