@@ -4,6 +4,73 @@
 
 // The backend serverless function handles the actual Airtable submission
 const SUBMIT_URL = '/api/submit';
+const DRAFT_URL = '/api/draft';
+const FORM_SLUG = 'ai-readiness-2026';
+const SESSION_STORAGE_KEY = 'mooove.ai-readiness-2026.session';
+
+/* ---------- Draft / partial-submission capture ----------
+   A stable session id (per browser tab via sessionStorage) is sent with
+   every draft + final submission so the admin can see partial answers.
+   Failures are intentionally silent — admin storage must never affect the
+   public form UX. */
+
+function getSessionId() {
+  try {
+    let id = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (!id) {
+      id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem(SESSION_STORAGE_KEY, id);
+    }
+    return id;
+  } catch {
+    if (!window.__mooove_sess) {
+      window.__mooove_sess = 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    }
+    return window.__mooove_sess;
+  }
+}
+
+let __draftTimer = null;
+let __draftSubmitted = false;
+
+function scheduleDraftSave() {
+  if (__draftSubmitted) return;
+  if (__draftTimer) clearTimeout(__draftTimer);
+  __draftTimer = setTimeout(saveDraftNow, 800);
+}
+
+function buildDraftPayload() {
+  return {
+    session_id: getSessionId(),
+    form_slug: FORM_SLUG,
+    answers: state.answers,
+    email: (state.contact && state.contact.email) || null,
+    first_name: (state.contact && state.contact.firstName) || null,
+    last_name: (state.contact && state.contact.lastName) || null,
+    phone: (state.contact && state.contact.phone) || null,
+    last_question_id: state.currentId || null,
+    question_count: Object.keys(state.answers).length,
+    user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+    referrer: typeof document !== 'undefined' ? document.referrer : null,
+  };
+}
+
+async function saveDraftNow() {
+  __draftTimer = null;
+  if (__draftSubmitted) return;
+  try {
+    await fetch(DRAFT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildDraftPayload()),
+      keepalive: true,
+    });
+  } catch {
+    // Silent — partial-capture failures never surface to the user
+  }
+}
 
 const PHASES = {
   1: 'Relationship with AI',
@@ -337,6 +404,7 @@ function setAnswer(qId, newValue) {
   const nextScore = scoreForAnswer(q, newValue);
   state.totalScore += (nextScore - prevScore);
   state.answers[qId] = newValue;
+  scheduleDraftSave();
 }
 
 function clearAnswer(qId) {
@@ -565,6 +633,7 @@ function buildAnswerArea(q) {
       oninput: (e) => {
         state.answers[q.id] = e.target.value;
         updateNextEnabled(q);
+        scheduleDraftSave();
       },
     });
     if (state.answers[q.id]) ta.value = state.answers[q.id];
@@ -796,6 +865,7 @@ function field(label, key, type, value, required, span) {
         else btn.setAttribute('disabled', '');
       }
       e.target.classList.remove('invalid');
+      scheduleDraftSave();
     },
   });
   input.dataset.key = key;
@@ -862,6 +932,8 @@ async function submitForm(btn) {
       throw new Error(serverDetail);
     }
     state.submitting = false;
+    __draftSubmitted = true;
+    if (__draftTimer) { clearTimeout(__draftTimer); __draftTimer = null; }
     transitionTo('thanks', { checkPhase: false });
   } catch (err) {
     state.submitting = false;
@@ -906,7 +978,23 @@ function buildAirtablePayload() {
     }
   });
 
-  return { fields, typecast: true };
+  // _meta is stripped server-side before Airtable; used only to mirror the
+  // submission to Supabase for the admin section.
+  let tierLabel = null;
+  try { tierLabel = tierForScore(Math.round(state.totalScore)).label; } catch {}
+
+  const _meta = {
+    session_id: getSessionId(),
+    form_slug: FORM_SLUG,
+    answers: state.answers,
+    tier: tierLabel,
+    last_question_id: state.currentId || null,
+    question_count: Object.keys(state.answers).length,
+    user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+    referrer: typeof document !== 'undefined' ? document.referrer : null,
+  };
+
+  return { fields, typecast: true, _meta };
 }
 
 /* ---------- Thank you screen ---------- */
