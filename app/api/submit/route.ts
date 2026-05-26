@@ -1,4 +1,5 @@
 import { getAdminSupabase } from '@/lib/supabase/admin';
+import { getFormBySlug, resolveAirtableCreds } from '@/lib/forms';
 
 // POST /api/submit — final submission.
 //
@@ -126,15 +127,6 @@ async function mirrorToSupabase(meta: NonNullable<SubmitBody['_meta']>, fields: 
 }
 
 export async function POST(req: Request) {
-  const { AIRTABLE_PAT, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;
-
-  if (!AIRTABLE_PAT || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
-    return Response.json(
-      { error: 'Server configuration error: Missing Airtable credentials' },
-      { status: 500 },
-    );
-  }
-
   let body: SubmitBody;
   try {
     body = (await req.json()) as SubmitBody;
@@ -146,15 +138,36 @@ export async function POST(req: Request) {
   const meta = body._meta;
   const airtablePayload = { fields: body.fields ?? {}, typecast: body.typecast ?? true };
 
-  const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-    AIRTABLE_TABLE_NAME,
+  // Resolve which form this submission belongs to. If the frontend sent a
+  // form_slug we use it; otherwise default to the AI Readiness form. The
+  // form lookup is wrapped in try/catch inside getFormBySlug so a Supabase
+  // outage can't break submissions — we just fall back to env vars.
+  const formSlug =
+    (typeof meta?.form_slug === 'string' && meta.form_slug.length > 0
+      ? meta.form_slug
+      : 'ai-readiness-2026');
+  const form = await getFormBySlug(formSlug);
+
+  // Resolve Airtable credentials: form-specific values take precedence,
+  // env vars are the fallback. This lets the form keep submitting before
+  // the admin UI exists to set per-form creds.
+  const { pat, baseId, tableName } = resolveAirtableCreds(form);
+  if (!pat || !baseId || !tableName) {
+    return Response.json(
+      { error: 'Server configuration error: Missing Airtable credentials' },
+      { status: 500 },
+    );
+  }
+
+  const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(
+    tableName,
   )}`;
 
   try {
     const response = await fetch(airtableUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        Authorization: `Bearer ${pat}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(airtablePayload),
