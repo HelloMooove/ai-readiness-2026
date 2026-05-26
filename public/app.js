@@ -243,7 +243,10 @@ const FR = {
   'Finding and keeping the right staff': 'Trouver et fidéliser les bonnes personnes',
   'Too much time spent on manual "copy-paste" work':
     'Trop de temps passé sur du travail manuel répétitif',
+  "We don't have clear, daily reports on our performance":
+    'Nous n’avons pas de rapports clairs et quotidiens sur nos performances',
   'Our sales pipeline is messy and hard to track': 'Notre pipeline commercial est désordonné et difficile à suivre',
+  "Teams don't talk or work well together": 'Les équipes ne communiquent pas et collaborent mal',
   'Rising costs are eating our profit margins': 'La hausse des coûts ronge nos marges',
   'It takes too long to get new employees started': 'L’intégration des nouveaux employés prend trop de temps',
   'We are moving too slow compared to competitors': 'Nous avançons trop lentement face à nos concurrents',
@@ -1122,7 +1125,9 @@ function renderContact() {
         id: 'submit-btn',
         disabled: !contactValid(),
         onclick: (e) => submitForm(e.currentTarget),
-      }, [t('See my score'), arrowSVG()]),
+      // Label is deliberately neutral — we don't reveal the score on this screen.
+      // The user receives the score by email after submission.
+      }, [t('Next'), arrowSVG()]),
     ]),
     el('div', { id: 'submit-error' }),
   ]);
@@ -1222,7 +1227,7 @@ async function submitForm(btn) {
     console.error(err);
     btn.removeAttribute('disabled');
     btn.innerHTML = '';
-    btn.appendChild(document.createTextNode(t('See my score')));
+    btn.appendChild(document.createTextNode(t('Next')));
     btn.appendChild(arrowSVG());
 
     const friendly = t('We could not save your result just yet. Please try again — your answers are safe.');
