@@ -1,5 +1,16 @@
-# Local-only config holding secrets — fill in config.local.js based on config.example.js
-config.local.js
+# Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Env files (keep secrets out of git — set them in Vercel)
+.env
+.env.local
+.env*.local
+.env.development
+.env.production
 
 # OS / editor
 .DS_Store
@@ -7,3 +18,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Vercel
+.vercel
