@@ -836,7 +836,6 @@ function renderIntro() {
   ]);
 
   const card = el('div', { class: 'card intro-card stagger' }, [
-    langToggle,
     el('span', { class: 'intro-eyebrow' }, t('2026 · Mauritius')),
     el('h1', { class: 'intro-title', html: t('The <em>AI Readiness</em> Diagnostic') }),
     el('p', { class: 'intro-sub' },
@@ -855,6 +854,7 @@ function renderIntro() {
       el('span', { class: 'dot-sep' }, '·'),
       el('span', {}, t('Instant score')),
     ]),
+    langToggle,
   ]);
 
   renderScreen(card);
@@ -1279,6 +1279,7 @@ function buildAirtablePayload() {
     question_count: Object.keys(state.answers).length,
     user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
     referrer: typeof document !== 'undefined' ? document.referrer : null,
+    lang: state.lang || 'en',
   };
 
   return { fields, typecast: true, _meta };
@@ -1286,39 +1287,49 @@ function buildAirtablePayload() {
 
 /* ---------- Thank you screen ---------- */
 
-// 2026 framework tier definitions — kept in sync with the MOOOVE dashboard.
+// 2026 framework tier definitions — MUST stay in sync with /lib/tiers.ts on
+// the server side (used by the email + admin insights). Five tiers matching
+// the MOOOVE dashboard ranges.
 const TIERS = [
   {
     key: 'undecided',
     label: 'Undecided',
     icon: '❓',
-    range: '-25 – 9',
-    profile: 'The Hesitant. No clear stance on AI: negative signals (manual work, blocked budgets, decision overload) outweigh adoption signals.',
-    test: (s) => s <= 9,
+    range: '0 – 19',
+    profile: 'The Hesitant. No clear stance on AI: negative signals outweigh adoption signals.',
+    test: (s) => s <= 19,
   },
   {
     key: 'ignition',
     label: 'Ignition',
     icon: '🔥',
-    range: '10 – 34',
+    range: '20 – 44',
     profile: 'The Explorer. Awareness is there, AI is in early use, but practice is still ad-hoc and unstructured.',
-    test: (s) => s >= 10 && s <= 34,
+    test: (s) => s >= 20 && s <= 44,
   },
   {
     key: 'momentum',
     label: 'Momentum',
     icon: '⚙️',
-    range: '35 – 54',
+    range: '45 – 74',
     profile: 'The Practical Implementer. Tools are live, training is on the agenda, value is uneven but visible.',
-    test: (s) => s >= 35 && s <= 54,
+    test: (s) => s >= 45 && s <= 74,
   },
   {
     key: 'mastery',
     label: 'Mastery',
     icon: '🚀',
-    range: '55 – 65',
+    range: '75 – 104',
     profile: 'The Strategic Architect. AI is embedded, KPIs are tracked live, training is planned; focus is on governance and edge.',
-    test: (s) => s >= 55,
+    test: (s) => s >= 75 && s <= 104,
+  },
+  {
+    key: 'ai-native',
+    label: 'AI-Native',
+    icon: '✨',
+    range: '105 – 140',
+    profile: 'The AI-Native Operator. AI is woven through the operating model — workflows, decisions, and product.',
+    test: (s) => s >= 105,
   },
 ];
 

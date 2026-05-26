@@ -1,32 +1,21 @@
+import { after } from 'next/server';
 import { getAdminSupabase } from '@/lib/supabase/admin';
-import { getFormBySlug, resolveAirtableCreds } from '@/lib/forms';
+import { getFormBySlug, resolveAirtableCreds, type AirtableCreds } from '@/lib/forms';
+import { fetchCohortDistribution } from '@/lib/email/cohort';
+import { composeEmail, type EmailLang } from '@/lib/email/template';
+import { sendEmail } from '@/lib/email/send';
 
 // POST /api/submit — final submission.
 //
-// 1) Writes the response to Airtable (existing behavior, unchanged from the
-//    static-site version). This is the source of truth visible to the user
-//    via the "your answers are safe" UX — if Airtable fails, we return an
-//    error to the user.
+// 1) Writes the response to Airtable. Source of truth for the user-facing
+//    "your answers are safe" UX — Airtable failure surfaces as an error.
 //
-// 2) ALSO marks the corresponding Supabase row as completed (used by the
-//    /admin section). Supabase write failures are logged but never surfaced
-//    to the user — admin storage must never break the public form.
+// 2) Mirrors the row into Supabase (marks completed_at, fills contact +
+//    score + tier). Mirror failures are logged only.
 //
-// The frontend sends an envelope of the form:
-//   {
-//     fields: { 'Email Address': ..., 'First Name': ..., 'AI_Score': ..., 'Q1 - ...': ..., ... },
-//     typecast: true,
-//     _meta: {                                  // optional, used only for Supabase mirror
-//       session_id: 'uuid',
-//       form_slug: 'ai-readiness-2026',
-//       answers: { q1: '...', q2: [...], ... }, // raw answers keyed by q-id
-//       tier: 'MOOOVE' | 'ALIGN' | 'BUILD' | 'SCALE',
-//       last_question_id: 'contact',
-//       question_count: 19,
-//       user_agent: '...',
-//       referrer: '...'
-//     }
-//   }
+// 3) Schedules a score email via `after()` (background work, runs once
+//    the response is returned). Email failures are logged only — they
+//    never affect the submit response.
 //
 // _meta is stripped before sending to Airtable so the Airtable schema is
 // unchanged.
@@ -45,6 +34,7 @@ type SubmitBody = {
     question_count?: unknown;
     user_agent?: unknown;
     referrer?: unknown;
+    lang?: unknown;
   };
 };
 
@@ -193,10 +183,71 @@ export async function POST(req: Request) {
       }
     }
 
+    // Fire the score email AFTER the response is sent (Next.js after()).
+    // The user gets a fast response; the email send + cohort fetch happen
+    // in the background. Failures are logged but never surface.
+    const submitterEmail = asString(airtablePayload.fields['Email Address']);
+    const submitterFirstName = asString(airtablePayload.fields['First Name']);
+    const submitterScore = airtablePayload.fields['AI_Score'];
+    const lang: EmailLang =
+      meta && typeof meta.lang === 'string' && meta.lang === 'fr' ? 'fr' : 'en';
+
+    if (submitterEmail && typeof submitterScore === 'number') {
+      after(() =>
+        sendScoreEmail({
+          to: submitterEmail,
+          firstName: submitterFirstName,
+          score: Math.round(submitterScore),
+          lang,
+          creds: { pat, baseId, tableName },
+        }),
+      );
+    }
+
     return Response.json(data);
   } catch (error) {
     console.error('Error submitting to Airtable:', error);
     return Response.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// Background work — runs after the response is returned to the user.
+// All errors are swallowed (logged only) so a flaky cohort fetch or
+// email-provider hiccup never affects the user-facing flow.
+async function sendScoreEmail(args: {
+  to: string;
+  firstName: string | null;
+  score: number;
+  lang: EmailLang;
+  creds: AirtableCreds;
+}) {
+  try {
+    let cohort = null;
+    try {
+      cohort = await fetchCohortDistribution(args.creds);
+    } catch (err) {
+      console.error('Cohort fetch failed (email will send without chart):', err);
+    }
+
+    const composed = composeEmail({
+      firstName: args.firstName,
+      score: args.score,
+      lang: args.lang,
+      cohort,
+    });
+
+    const result = await sendEmail({
+      to: args.to,
+      subject: composed.subject,
+      html: composed.html,
+      text: composed.text,
+    });
+
+    if (!result.ok) {
+      console.error('Score email send failed:', result.reason, result.error ?? '');
+    }
+  } catch (err) {
+    console.error('sendScoreEmail threw:', err);
   }
 }
 

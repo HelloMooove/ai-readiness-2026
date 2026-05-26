@@ -63,9 +63,10 @@ export default async function AdminHome() {
             <li className="done">Phase 0 — Foundation (Next.js + Supabase auth)</li>
             <li className="done">Phase 1.1 — Draft capture (Supabase mirror live)</li>
             <li className="done">Phase 1.2 — Admin submissions list</li>
-            <li>Phase 1.3 — Excel export</li>
-            <li>Phase 1.4 — Insights</li>
-            <li>Phase 2 — Multi-form support + per-form Airtable connections</li>
+            <li className="done">Phase 1.3 — Excel export</li>
+            <li className="done">Phase 1.4 — Insights</li>
+            <li className="done">Phase 2.1 — Forms registry + encrypted Airtable creds (env fallback)</li>
+            <li>Phase 2.2 — Admin UI to manage forms &amp; per-form Airtable connections</li>
             <li>Phase 3 — AI form builder (paste text / upload Word doc)</li>
             <li>Phase 4 — User invites + roles</li>
           </ul>

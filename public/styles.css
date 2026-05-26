@@ -678,21 +678,19 @@ body {
 }
 
 /* Intro screen */
-.intro-card { text-align: center; padding: 56px 36px 48px; position: relative; }
+.intro-card { text-align: center; padding: 56px 36px 48px; }
 
-/* Language toggle pill — pinned to the top-right corner of the intro card
-   so it doesn't crowd the centered eyebrow / title block. */
+/* Language toggle pill — rendered last in the intro card, sits centered
+   below the "4 phases · ≈ 4 minutes · Instant score" tagline with a
+   generous top margin so it doesn't feel cramped against the meta line. */
 .lang-toggle {
-  position: absolute;
-  top: 18px;
-  right: 18px;
   display: inline-flex;
   gap: 2px;
   padding: 4px;
+  margin-top: 36px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 999px;
-  z-index: 2;
 }
 .lang-btn {
   appearance: none;

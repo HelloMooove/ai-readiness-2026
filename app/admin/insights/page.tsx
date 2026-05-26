@@ -3,6 +3,7 @@ import AdminTopbar from '../_components/AdminTopbar';
 import { readSupabaseEnv } from '@/lib/supabase/env';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { QUESTIONS, PHASES, getQuestion, type FormQuestion } from '@/lib/form-schemas/ai-readiness-2026';
+import { TIER_LABELS_ORDERED } from '@/lib/tiers';
 import type { Submission } from '@/lib/types/submission';
 
 export const dynamic = 'force-dynamic';
@@ -100,8 +101,9 @@ function aggregateTiers(completed: Submission[]): { tier: string; count: number;
     counts.set(t, (counts.get(t) ?? 0) + 1);
   }
   const total = completed.length || 1;
-  // Stable display order for the framework tiers
-  const order = ['Undecided', 'Ignition', 'Momentum', 'Mastery', '(no tier)'];
+  // Stable display order — lowest tier to highest. Trailing '(no tier)'
+  // catches legacy rows from before the tier column was populated.
+  const order = [...TIER_LABELS_ORDERED, '(no tier)'];
   return order
     .map((tier) => ({
       tier,
