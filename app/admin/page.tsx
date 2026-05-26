@@ -1,7 +1,8 @@
-import { redirect } from 'next/navigation';
-import { createServerSupabase } from '@/lib/supabase/server';
-import { isAllowed, getAllowlist } from '@/lib/auth/allowlist';
+import Link from 'next/link';
 import { readSupabaseEnv } from '@/lib/supabase/env';
+import { requireAdmin } from './_components/requireAdmin';
+import AdminTopbar from './_components/AdminTopbar';
+import { createServerSupabase } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,75 +15,60 @@ export default async function AdminHome() {
           <h1>Admin setup needed</h1>
           <p>
             The admin section needs Supabase to be configured before it can run.
-            Add the following environment variables to your Vercel project and redeploy:
+            Add these environment variables to Vercel and redeploy:
           </p>
           <pre className="admin-code">
             NEXT_PUBLIC_SUPABASE_URL=https://&lt;your-project&gt;.supabase.co
             {'\n'}NEXT_PUBLIC_SUPABASE_ANON_KEY=&lt;your-anon-key&gt;
           </pre>
-          <p className="admin-muted">
-            Both values come from your Supabase project: Settings → API.
-          </p>
         </div>
       </main>
     );
   }
 
+  const session = await requireAdmin();
+  if (!session) return null;
+
+  // Quick counts for the dashboard cards
   const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect('/admin/login');
-  if (!isAllowed(user.email)) {
-    return (
-      <main className="admin-shell">
-        <div className="admin-card">
-          <h1>Not authorized</h1>
-          <p>
-            <code>{user.email}</code> is not on the admin allowlist. Sign out and try a
-            different email, or ask an existing admin to add you.
-          </p>
-          <p className="admin-muted">
-            Current allowlist: <code>{getAllowlist().join(', ')}</code>
-          </p>
-          <form action="/auth/signout" method="POST">
-            <button type="submit" className="admin-btn">
-              Sign out
-            </button>
-          </form>
-        </div>
-      </main>
-    );
-  }
+  const [{ count: allCount }, { count: completedCount }, { count: partialCount }] = await Promise.all([
+    supabase.from('submissions').select('*', { count: 'exact', head: true }),
+    supabase.from('submissions').select('*', { count: 'exact', head: true }).not('completed_at', 'is', null),
+    supabase.from('submissions').select('*', { count: 'exact', head: true }).is('completed_at', null),
+  ]);
 
   return (
     <main className="admin-shell">
-      <header className="admin-topbar">
-        <div className="admin-brand">MOOOVE Admin</div>
-        <div className="admin-user">
-          <span>{user.email}</span>
-          <form action="/auth/signout" method="POST">
-            <button type="submit" className="admin-btn admin-btn-ghost">
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-
+      <AdminTopbar email={session.email} current="home" />
       <section className="admin-card">
-        <h1>Welcome.</h1>
-        <p>
-          You&apos;re signed in to the admin. The foundation is live — submissions,
-          insights, form builder, and user management land in the next phases.
-        </p>
-        <ul className="admin-progress">
-          <li className="done">Phase 0 — Foundation (Next.js + Supabase auth)</li>
-          <li>Phase 1 — Submissions, drafts capture, Excel export, insights</li>
-          <li>Phase 2 — Multi-form support + per-form Airtable connections</li>
-          <li>Phase 3 — AI form builder (paste text / upload Word doc)</li>
-          <li>Phase 4 — User invites + roles</li>
-        </ul>
+          <h1>Welcome.</h1>
+          <p>Quick overview. Use the nav above to dive in.</p>
+
+          <div className="stat-grid">
+            <Link href="/admin/submissions?tab=all" className="stat">
+              <span className="stat-label">All submissions</span>
+              <span className="stat-value">{allCount ?? 0}</span>
+            </Link>
+            <Link href="/admin/submissions?tab=completed" className="stat">
+              <span className="stat-label">Completed</span>
+              <span className="stat-value stat-good">{completedCount ?? 0}</span>
+            </Link>
+            <Link href="/admin/submissions?tab=partial" className="stat">
+              <span className="stat-label">Partial / drop-offs</span>
+              <span className="stat-value stat-warn">{partialCount ?? 0}</span>
+            </Link>
+          </div>
+
+          <ul className="admin-progress">
+            <li className="done">Phase 0 — Foundation (Next.js + Supabase auth)</li>
+            <li className="done">Phase 1.1 — Draft capture (Supabase mirror live)</li>
+            <li className="done">Phase 1.2 — Admin submissions list</li>
+            <li>Phase 1.3 — Excel export</li>
+            <li>Phase 1.4 — Insights</li>
+            <li>Phase 2 — Multi-form support + per-form Airtable connections</li>
+            <li>Phase 3 — AI form builder (paste text / upload Word doc)</li>
+            <li>Phase 4 — User invites + roles</li>
+          </ul>
       </section>
     </main>
   );
