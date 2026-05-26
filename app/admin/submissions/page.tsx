@@ -112,9 +112,19 @@ export default async function SubmissionsPage({
     <main className="admin-shell">
       <AdminTopbar email={session.email} current="submissions" />
       <div className="page-header">
+        <div className="page-header-row">
           <h1>Submissions</h1>
-          <p className="admin-muted">Browse every submission — completed and partial.</p>
+          <a
+            href={`/api/admin/export?tab=${tab}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+            className="admin-btn"
+          >
+            Export to Excel ↓
+          </a>
         </div>
+        <p className="admin-muted">
+          Browse every submission — completed and partial. Export respects the active tab and search.
+        </p>
+      </div>
 
         <div className="admin-card admin-card-flush">
           <div className="tab-row" role="tablist">
