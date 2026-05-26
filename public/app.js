@@ -79,6 +79,267 @@ const PHASES = {
   4: 'Contact Details',
 };
 
+/* ---------- Internationalisation ----------
+   The form is bilingual EN/FR. ALL stored data (answers, scores, tier,
+   Airtable column values, Supabase) stays in English so dashboards and
+   admin views are language-stable. Only the display layer translates.
+
+   t(src) returns the French translation when state.lang === 'fr' and one
+   exists; otherwise falls through to the English source string. This lets
+   us add translations incrementally without breaking the form. */
+
+const LANG_STORAGE_KEY = 'mooove.ai-readiness-2026.lang';
+
+function getStoredLang() {
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY);
+    if (stored === 'fr' || stored === 'en') return stored;
+  } catch {}
+  return 'en';
+}
+
+function setLang(lang) {
+  state.lang = (lang === 'fr') ? 'fr' : 'en';
+  try { localStorage.setItem(LANG_STORAGE_KEY, state.lang); } catch {}
+}
+
+function t(src) {
+  if (src == null || src === '') return src;
+  if (state.lang !== 'fr') return src;
+  const key = String(src);
+  return Object.prototype.hasOwnProperty.call(FR, key) ? FR[key] : src;
+}
+
+// French translation table. Keys are the English source strings — this
+// keeps the rest of the code in English and makes missing translations
+// fall through gracefully (English shows instead of a broken UI).
+const FR = {
+  /* --- Intro --- */
+  '2026 · Mauritius': '2026 · Maurice',
+  'The <em>AI Readiness</em> Diagnostic': 'Le diagnostic <em>AI Readiness</em>',
+  'A short, executive-level questionnaire that maps where your organization stands on AI today — and what it would take to thrive in 2026.':
+    'Un court questionnaire pour dirigeants qui révèle où votre organisation se situe face à l’IA aujourd’hui, et ce qu’il faudrait pour exceller en 2026.',
+  'Start the diagnostic': 'Démarrer le diagnostic',
+  '4 phases': '4 phases',
+  '≈ 4 minutes': '≈ 4 minutes',
+  'Instant score': 'Score instantané',
+
+  /* --- UI chrome --- */
+  'Back': 'Retour',
+  'Next': 'Suivant',
+  'Continue': 'Continuer',
+  'Sending…': 'Envoi…',
+  'Back to previous question': 'Retour à la question précédente',
+  'Select all that apply': 'Sélectionnez tout ce qui s’applique',
+  'Select up to 3': 'Sélectionnez jusqu’à 3',
+  'Select up to 2': 'Sélectionnez jusqu’à 2',
+
+  /* --- Phase labels --- */
+  'Relationship with AI': 'Votre relation avec l’IA',
+  'AI Today': 'L’IA aujourd’hui',
+  'AI Tomorrow': 'L’IA demain',
+  'Contact Details': 'Vos coordonnées',
+
+  /* --- Contact form --- */
+  'Almost done.': 'Presque terminé.',
+  'Just a few details so we can save your result and show you your AI Readiness score.':
+    'Juste quelques informations pour enregistrer votre résultat et vous envoyer votre score AI Readiness.',
+  'First Name': 'Prénom',
+  'Last Name': 'Nom',
+  'Email Address': 'Adresse e-mail',
+  'Phone Number (optional)': 'Numéro de téléphone (optionnel)',
+  'See my score': 'Voir mon score',
+  'We could not save your result just yet. Please try again — your answers are safe.':
+    'Nous n’avons pas pu enregistrer votre résultat pour l’instant. Réessayez — vos réponses sont en sécurité.',
+
+  /* --- Thank-you screen --- */
+  'Thank you!': 'Merci !',
+  'Check your email for your AI Maturity Score.':
+    'Consultez votre boîte e-mail pour découvrir votre score de maturité IA.',
+
+  /* --- Q3 group titles --- */
+  'Productivity & personal efficiency': 'Productivité et efficacité personnelle',
+  'Strategic & analytical work': 'Travail stratégique et analytique',
+  'Technical & AI development': 'Développement technique et IA',
+  'Automation & operational transformation': 'Automatisation et transformation opérationnelle',
+  'Organizational AI adoption': 'Adoption de l’IA à l’échelle de l’organisation',
+
+  /* --- Question texts --- */
+  'Are you AI literate?': 'Êtes-vous à l’aise avec l’IA ?',
+  'How often do you use AI?': 'À quelle fréquence utilisez-vous l’IA ?',
+  'What do you use AI for?': 'Pour quoi utilisez-vous l’IA ?',
+  'What conversational AI tools do you use?': 'Quels outils d’IA conversationnelle utilisez-vous ?',
+  'What is the size of your company?': 'Quelle est la taille de votre entreprise ?',
+  'What is your current job title?': 'Quel est votre poste actuel ?',
+  'What are your current business challenges?': 'Quels sont vos défis business actuels ?',
+  'Have you considered AI as a solution to solve these problems?':
+    'Avez-vous envisagé l’IA comme solution à ces problèmes ?',
+  'How did you proceed?': 'Comment avez-vous procédé ?',
+  "What's preventing you from doing so?": 'Qu’est-ce qui vous en empêche ?',
+  'How do you track or measure your business KPIs?':
+    'Comment suivez-vous ou mesurez-vous vos KPIs business ?',
+  'In which industry is your organization active?': 'Dans quelle industrie votre organisation opère-t-elle ?',
+  'What are your top 3 business priorities today?': 'Quelles sont vos 3 priorités business actuelles ?',
+  'What decisions are currently difficult to make in your organization?':
+    'Quelles décisions sont actuellement difficiles à prendre dans votre organisation ?',
+  'Do you plan to train your teams on AI usage in 2026?':
+    'Prévoyez-vous de former vos équipes à l’utilisation de l’IA en 2026 ?',
+  'What training themes do you want to cover?': 'Quels thèmes de formation souhaitez-vous couvrir ?',
+  'Why not?': 'Pourquoi pas ?',
+  'What are the must-haves of a solid AI training in 2026?':
+    'Quels sont les indispensables d’une formation IA solide en 2026 ?',
+
+  /* --- Option values: Q1 / Q8 / Q15 (yes/no) --- */
+  'Yes': 'Oui',
+  'No': 'Non',
+
+  /* --- Q2: frequency --- */
+  'Always': 'Toujours',
+  'Sometimes': 'Parfois',
+  'Rarely': 'Rarement',
+  'Never': 'Jamais',
+
+  /* --- Q3: AI use cases --- */
+  'Writing emails and documents': 'Rédiger des e-mails et documents',
+  'Summarizing meetings or files': 'Résumer des réunions ou des fichiers',
+  'Researching information faster': 'Rechercher des informations plus rapidement',
+  'Creating presentations or content': 'Créer des présentations ou du contenu',
+  'Generating images or designs': 'Générer des images ou des designs',
+  'Experimenting with AI personally': 'Expérimenter l’IA personnellement',
+  'Brainstorming ideas and strategy': 'Brainstormer des idées et de la stratégie',
+  'Analyzing data and reports': 'Analyser des données et des rapports',
+  'Supporting business decisions': 'Soutenir les décisions business',
+  'Improving customer support': 'Améliorer le support client',
+  'Writing code or formulas': 'Écrire du code ou des formules',
+  'Building AI-powered applications': 'Construire des applications propulsées par l’IA',
+  'Automating repetitive tasks': 'Automatiser les tâches répétitives',
+  'Creating AI workflows or agents': 'Créer des workflows ou agents IA',
+  'Connecting tools and systems': 'Connecter des outils et systèmes',
+  'Using AI across my organization': 'Déployer l’IA dans toute l’organisation',
+  "I don't use AI for work yet": 'Je n’utilise pas encore l’IA au travail',
+
+  /* --- Q4: conversational AI tools (mostly proper nouns; kept as-is) --- */
+  'Custom or Internal AI Company Bot': 'Bot IA interne ou personnalisé',
+  'Other': 'Autre',
+  'None': 'Aucun',
+
+  /* --- Q5: company size --- */
+  '1–10 employees': '1–10 employés',
+  '11–50 employees': '11–50 employés',
+  '51–250 employees': '51–250 employés',
+  '251+ employees': '251+ employés',
+
+  /* --- Q6: job titles --- */
+  'CEO / Founder': 'PDG / Fondateur',
+  'CIO / CTO / Head of IT': 'CIO / CTO / Responsable IT',
+  'CHRO / Head of HR': 'CHRO / Responsable RH',
+  'CFO / Head of Finance': 'CFO / Responsable Finance',
+  'COO / Head of Operations': 'COO / Responsable des Opérations',
+  'Director / Head of (other function)': 'Directeur / Responsable (autre fonction)',
+  'HR Manager / L&D': 'Manager RH / L&D',
+  'Operational Manager': 'Manager opérationnel',
+
+  /* --- Q7: business challenges --- */
+  'Finding and keeping the right staff': 'Trouver et fidéliser les bonnes personnes',
+  'Too much time spent on manual "copy-paste" work':
+    'Trop de temps passé sur du travail manuel répétitif',
+  'Our sales pipeline is messy and hard to track': 'Notre pipeline commercial est désordonné et difficile à suivre',
+  'Rising costs are eating our profit margins': 'La hausse des coûts ronge nos marges',
+  'It takes too long to get new employees started': 'L’intégration des nouveaux employés prend trop de temps',
+  'We are moving too slow compared to competitors': 'Nous avançons trop lentement face à nos concurrents',
+  'Finding the right files or info takes too much time':
+    'Retrouver les bons fichiers ou informations prend trop de temps',
+
+  /* --- Q9: how proceeded --- */
+  'Hiring a consultant': 'Engager un consultant',
+  'Train your teams': 'Former vos équipes',
+  'Investigate the topic': 'Se renseigner sur le sujet',
+
+  /* --- Q10: what's preventing --- */
+  'Business readiness': 'Maturité business insuffisante',
+  'Budgeting in current financial year': 'Budget dans l’exercice financier en cours',
+  'Lack of guidance': 'Manque d’accompagnement',
+
+  /* --- Q11: KPI tracking --- */
+  'Excel spreadsheets': 'Feuilles de calcul Excel',
+  'Business Intelligence via tools (ERP-based systems)':
+    'Business Intelligence via outils (systèmes ERP)',
+  'Fully automated reports with live dashboards':
+    'Rapports entièrement automatisés avec tableaux de bord en direct',
+
+  /* --- Q12: industry --- */
+  'Technology & Software': 'Technologie & Logiciels',
+  'Banking & Financial Services': 'Banque & Services financiers',
+  'Retail & E-commerce': 'Commerce de détail & E-commerce',
+  'Manufacturing': 'Industrie manufacturière',
+  'Healthcare & Life Sciences': 'Santé & Sciences de la vie',
+  'Education': 'Éducation',
+  'Professional Services (Consulting, Legal, etc.)': 'Services professionnels (Conseil, Juridique, etc.)',
+  'Real Estate & Construction': 'Immobilier & Construction',
+  'Hospitality & Tourism': 'Hôtellerie & Tourisme',
+  'Energy & Utilities': 'Énergie & Services publics',
+
+  /* --- Q13: business priorities --- */
+  'Profitability & Cost Optimization': 'Rentabilité & Optimisation des coûts',
+  'Operational Efficiency & Automation': 'Efficacité opérationnelle & Automatisation',
+  'Digital Transformation & AI Integration': 'Transformation digitale & Intégration de l’IA',
+  'Talent Acquisition & Retention': 'Acquisition & Rétention des talents',
+  'Customer Experience & Loyalty': 'Expérience client & Fidélisation',
+  'Market Expansion & Scaling': 'Expansion & Croissance',
+  'Sustainability & ESG Strategy': 'Durabilité & Stratégie ESG',
+
+  /* --- Q14: difficult decisions --- */
+  'Budgeting & Financial Forecasting': 'Budgétisation & Prévisions financières',
+  'Strategic Expansion & Market Entry': 'Expansion stratégique & Entrée sur de nouveaux marchés',
+  'Pricing & Competitive Strategy': 'Stratégie de prix & Concurrence',
+  'Talent Acquisition & Hiring': 'Recrutement & Acquisition de talents',
+  'Resource & Workforce Allocation': 'Allocation des ressources & du personnel',
+
+  /* --- Q16: training themes --- */
+  'AI Foundations: Getting the whole team comfortable with the basics.':
+    'Fondamentaux de l’IA : mettre toute l’équipe à l’aise avec les bases.',
+  'Prompt Engineering: Learning how to "talk" to AI to get perfect results.':
+    'Prompt Engineering : apprendre à « parler » à l’IA pour obtenir des résultats parfaits.',
+  'Automating Repetitive Tasks: Cutting out "copy-paste" work.':
+    'Automatiser les tâches répétitives : éliminer le travail de copier-coller.',
+  'AI for Sales & Growth: Using AI to find leads and close deals faster.':
+    'IA pour les ventes & la croissance : utiliser l’IA pour trouver des prospects et conclure plus vite.',
+  'Smart Data & Reporting: Turning messy spreadsheets into clear daily dashboards.':
+    'Données & reporting intelligents : transformer des tableurs désordonnés en tableaux de bord clairs.',
+  'AI in HR & Recruitment: Speeding up hiring and making onboarding easier.':
+    'IA en RH & Recrutement : accélérer l’embauche et faciliter l’intégration.',
+  'Financial AI & Admin: Saving time on invoices, bills, and paperwork.':
+    'IA financière & administration : gagner du temps sur les factures et la paperasse.',
+  'AI Safety & Policy: Ensuring your team uses AI securely and legally.':
+    'Sécurité & gouvernance IA : garantir un usage de l’IA sûr et conforme.',
+  'AI for Content & Marketing: Creating high-quality posts and emails in seconds.':
+    'IA pour le contenu & le marketing : créer des publications et e-mails de qualité en quelques secondes.',
+  'Advanced Workflow Design: Building custom "AI employees" for specific departments.':
+    'Conception de workflows avancés : créer des « employés IA » sur mesure par département.',
+
+  /* --- Q18: must-haves of a good training --- */
+  'Hands-on practice: Actually building and using tools during the session.':
+    'Pratique concrète : construire et utiliser des outils en séance.',
+  'Real-world examples: Seeing case studies from my specific industry.':
+    'Exemples concrets : études de cas dans mon secteur.',
+  'Data Security & Privacy: Clear rules on how to keep company secrets safe.':
+    'Sécurité & confidentialité des données : règles claires pour protéger les secrets de l’entreprise.',
+  'ROI & Business Proof: Training that shows exactly how it saves money.':
+    'ROI & preuve business : une formation qui montre exactement les économies réalisées.',
+  'Ready-to-use "Prompts": A library of commands my team can use immediately.':
+    'Prompts prêts à l’emploi : une bibliothèque de commandes utilisables immédiatement.',
+  'No-code automation: Learning how to connect apps (like n8n) without IT.':
+    'Automatisation no-code : apprendre à connecter des applications (comme n8n) sans IT.',
+  'Human-AI Culture: Helping staff overcome the fear of being replaced.':
+    'Culture humain-IA : aider les équipes à surmonter la peur d’être remplacées.',
+  'Latest 2026 tools: Access to the newest models, not old technology.':
+    'Derniers outils 2026 : accès aux modèles les plus récents.',
+  'Post-training support: A roadmap or community to help us after the session.':
+    'Suivi post-formation : feuille de route ou communauté pour nous accompagner.',
+  'Executive alignment: Ensuring the boss and the team are on the same page.':
+    'Alignement de la direction : assurer que dirigeants et équipes parlent le même langage.',
+};
+
 /* ---------- Question definitions ---------- */
 /*
   Each question:
@@ -374,11 +635,15 @@ const QMAP = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
 const state = {
   currentId: 'intro',
   history: [],            // stack of previous ids (excluding current)
-  answers: {},            // qId -> value or array
+  answers: {},            // qId -> value or array (ALWAYS the English option value)
   contact: { firstName: '', lastName: '', email: '', phone: '' },
   totalScore: 0,
   submitting: false,
+  lang: 'en',             // 'en' | 'fr' — initialised from localStorage on boot
 };
+
+// Hydrate language preference from localStorage as soon as state exists.
+state.lang = getStoredLang();
 
 /* ---------- Score helpers ---------- */
 
@@ -552,24 +817,40 @@ async function transitionTo(nextId, opts = {}) {
 /* ---------- Intro screen ---------- */
 
 function renderIntro() {
+  const langToggle = el('div', { class: 'lang-toggle', role: 'group', 'aria-label': 'Language' }, [
+    el('button', {
+      type: 'button',
+      class: 'lang-btn' + (state.lang === 'en' ? ' active' : ''),
+      'aria-pressed': state.lang === 'en' ? 'true' : 'false',
+      onclick: () => { if (state.lang !== 'en') { setLang('en'); renderIntro(); } },
+    }, 'English'),
+    el('button', {
+      type: 'button',
+      class: 'lang-btn' + (state.lang === 'fr' ? ' active' : ''),
+      'aria-pressed': state.lang === 'fr' ? 'true' : 'false',
+      onclick: () => { if (state.lang !== 'fr') { setLang('fr'); renderIntro(); } },
+    }, 'Français'),
+  ]);
+
   const card = el('div', { class: 'card intro-card stagger' }, [
-    el('span', { class: 'intro-eyebrow' }, '2026 · Mauritius'),
-    el('h1', { class: 'intro-title', html: 'The <em>AI Readiness</em> Diagnostic' }),
+    langToggle,
+    el('span', { class: 'intro-eyebrow' }, t('2026 · Mauritius')),
+    el('h1', { class: 'intro-title', html: t('The <em>AI Readiness</em> Diagnostic') }),
     el('p', { class: 'intro-sub' },
-      'A short, executive-level questionnaire that maps where your organization stands on AI today — and what it would take to thrive in 2026.'),
+      t('A short, executive-level questionnaire that maps where your organization stands on AI today — and what it would take to thrive in 2026.')),
     el('div', { class: 'btn-row' }, [
       el('button', {
         class: 'btn-primary',
         type: 'button',
         onclick: (e) => { pulseBtn(e.currentTarget); setTimeout(() => transitionTo('q1'), 180); },
-      }, ['Start the diagnostic', arrowSVG()])
+      }, [t('Start the diagnostic'), arrowSVG()])
     ]),
     el('div', { class: 'intro-meta' }, [
-      el('span', {}, '4 phases'),
+      el('span', {}, t('4 phases')),
       el('span', { class: 'dot-sep' }, '·'),
-      el('span', {}, '≈ 4 minutes'),
+      el('span', {}, t('≈ 4 minutes')),
       el('span', { class: 'dot-sep' }, '·'),
-      el('span', {}, 'Instant score'),
+      el('span', {}, t('Instant score')),
     ]),
   ]);
 
@@ -597,8 +878,8 @@ function renderQuestion(id) {
     buildProgressBar(),
     cardHeader(q.phase, state.history.length > 0),
     el('div', { class: 'q-number' }, number),
-    el('h2', { class: 'q-text' }, q.text),
-    q.hint ? el('p', { class: 'q-hint' }, `(${q.hint})`) : el('div', { style: 'height:8px' }),
+    el('h2', { class: 'q-text' }, t(q.text)),
+    q.hint ? el('p', { class: 'q-hint' }, `(${t(q.hint)})`) : el('div', { style: 'height:8px' }),
     buildAnswerArea(q),
     buildNextRow(q),
   ]);
@@ -618,9 +899,9 @@ function backArrowSVG() {
 function cardHeader(phase, hasBack) {
   return el('div', { class: 'card-header' }, [
     hasBack
-      ? el('button', { class: 'back-btn', type: 'button', onclick: goBack, 'aria-label': 'Back to previous question' }, [backArrowSVG(), 'Back'])
+      ? el('button', { class: 'back-btn', type: 'button', onclick: goBack, 'aria-label': t('Back to previous question') }, [backArrowSVG(), t('Back')])
       : null,
-    el('span', { class: 'phase-badge' }, `Phase ${phase} — ${PHASES[phase]}`),
+    el('span', { class: 'phase-badge' }, `Phase ${phase} — ${t(PHASES[phase])}`),
   ]);
 }
 
@@ -661,7 +942,8 @@ function buildAnswerArea(q) {
       },
     }, [
       el('span', { class: 'dot', 'aria-hidden': 'true' }),
-      el('span', { class: 'label' }, opt.value),
+      // Display uses translation; storage / scoring still uses opt.value (English)
+      el('span', { class: 'label' }, t(opt.value)),
       checkSVG(),
     ]);
   };
@@ -672,7 +954,7 @@ function buildAnswerArea(q) {
     const wrap = el('div', { class: 'option-groups', role: q.type === 'multi' ? 'group' : 'radiogroup' });
     let globalIdx = 0;
     q.groups.forEach(group => {
-      wrap.appendChild(el('div', { class: 'option-group-title' }, group.title));
+      wrap.appendChild(el('div', { class: 'option-group-title' }, t(group.title)));
       const grid = el('div', { class: 'options' + groupClass });
       group.options.forEach(opt => grid.appendChild(makeOptionBtn(opt, globalIdx++)));
       wrap.appendChild(grid);
@@ -759,7 +1041,7 @@ function buildNextRow(q) {
   if (q.type === 'single') return null;
 
   const isContactNext = q.next() === 'contact' || (q.id === 'q18');
-  const label = isContactNext ? 'Continue' : 'Next';
+  const label = t(isContactNext ? 'Continue' : 'Next');
   const btn = el('button', {
     class: 'btn-primary',
     type: 'button',
@@ -823,14 +1105,14 @@ function renderContact() {
   const card = el('div', { class: 'card stagger' }, [
     buildProgressBar(),
     cardHeader(4, true),
-    el('h2', { class: 'q-text' }, 'Almost done.'),
-    el('p', { class: 'intro-msg' }, 'Just a few details so we can save your result and show you your AI Readiness score.'),
+    el('h2', { class: 'q-text' }, t('Almost done.')),
+    el('p', { class: 'intro-msg' }, t('Just a few details so we can save your result and show you your AI Readiness score.')),
 
     el('div', { class: 'input-grid' }, [
-      field('First Name', 'firstName', 'text', c.firstName, true),
-      field('Last Name', 'lastName', 'text', c.lastName, true),
-      field('Email Address', 'email', 'email', c.email, true, 'full'),
-      field('Phone Number (optional)', 'phone', 'tel', c.phone, false, 'full'),
+      field(t('First Name'), 'firstName', 'text', c.firstName, true),
+      field(t('Last Name'), 'lastName', 'text', c.lastName, true),
+      field(t('Email Address'), 'email', 'email', c.email, true, 'full'),
+      field(t('Phone Number (optional)'), 'phone', 'tel', c.phone, false, 'full'),
     ]),
 
     el('div', { class: 'btn-row' }, [
@@ -840,7 +1122,7 @@ function renderContact() {
         id: 'submit-btn',
         disabled: !contactValid(),
         onclick: (e) => submitForm(e.currentTarget),
-      }, ['See my score', arrowSVG()]),
+      }, [t('See my score'), arrowSVG()]),
     ]),
     el('div', { id: 'submit-error' }),
   ]);
@@ -906,7 +1188,7 @@ async function submitForm(btn) {
   btn.setAttribute('disabled', '');
   btn.innerHTML = '';
   btn.appendChild(el('div', { class: 'btn-spinner', 'aria-hidden': 'true' }));
-  btn.appendChild(document.createTextNode('Sending…'));
+  btn.appendChild(document.createTextNode(t('Sending…')));
 
   const payload = buildAirtablePayload();
 
@@ -940,10 +1222,10 @@ async function submitForm(btn) {
     console.error(err);
     btn.removeAttribute('disabled');
     btn.innerHTML = '';
-    btn.appendChild(document.createTextNode('See my score'));
+    btn.appendChild(document.createTextNode(t('See my score')));
     btn.appendChild(arrowSVG());
 
-    const friendly = 'We could not save your result just yet. Please try again — your answers are safe.';
+    const friendly = t('We could not save your result just yet. Please try again — your answers are safe.');
     errBox.appendChild(el('div', { class: 'error-msg' }, [
       el('div', {}, friendly),
       serverDetail ? el('div', { class: 'error-detail' }, serverDetail) : null,
@@ -1040,67 +1322,19 @@ function tierForScore(score) {
 }
 
 function renderThanks() {
+  // Big checkmark — purely visual, doesn't reveal the score.
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'check-svg');
   svg.setAttribute('viewBox', '0 0 48 48');
   svg.innerHTML = '<path d="M12 24.5l8 8 16-17" />';
 
-  const score = Math.round(state.totalScore);
-  const tier = tierForScore(score);
-
-  const scoreBlock = el('div', { class: `score-block tier-${tier.key}` }, [
-    el('span', { class: 'score-eyebrow' }, 'Your AI Readiness Score'),
-    el('div', { class: 'score-value' }, [
-      el('span', { class: 'score-number' }, String(score)),
-      el('span', { class: 'score-suffix' }, '/ 65'),
-    ]),
-    el('div', { class: 'score-tier' }, [
-      el('span', { class: 'score-tier-icon', 'aria-hidden': 'true' }, tier.icon),
-      el('span', { class: 'score-tier-label' }, tier.label),
-    ]),
-    el('p', { class: 'score-tier-profile' }, tier.profile),
-  ]);
-
-  const tierLegend = el('div', { class: 'tier-legend' }, [
-    el('div', { class: 'tier-legend-header' }, [
-      el('span', { class: 'tier-legend-title' }, 'Tier legend'),
-      el('span', { class: 'tier-legend-sub' }, '4 tiers · 2026 framework'),
-    ]),
-    el('div', { class: 'tier-list' }, TIERS.map(t => (
-      el('div', { class: 'tier-row' + (t.key === tier.key ? ' active' : '') }, [
-        el('span', { class: 'tier-icon', 'aria-hidden': 'true' }, t.icon),
-        el('div', { class: 'tier-meta' }, [
-          el('div', { class: 'tier-meta-top' }, [
-            el('span', { class: 'tier-name' }, t.label),
-            el('span', { class: 'tier-range' }, t.range),
-          ]),
-          el('p', { class: 'tier-profile' }, t.profile),
-        ]),
-      ])
-    ))),
-  ]);
-
-  const compareCard = el('a', {
-    class: 'compare-card',
-    href: 'https://gmhr.vercel.app/',
-    target: '_blank',
-    rel: 'noopener noreferrer',
-  }, [
-    el('div', { class: 'compare-text' }, [
-      el('span', { class: 'compare-eyebrow' }, 'Benchmark'),
-      el('span', { class: 'compare-title' }, 'See how you compare to your peers'),
-      el('span', { class: 'compare-sub' }, 'Open the live MOOOVE AI Readiness dashboard for Mauritius'),
-    ]),
-    el('span', { class: 'compare-arrow', 'aria-hidden': 'true' }, [arrowSVG()]),
-  ]);
-
+  // The score and tier are still computed and submitted to Airtable + Supabase
+  // (handled before this screen renders) — we just don't display them to the
+  // user. The score reaches them via email instead.
   const card = el('div', { class: 'card thanks-card stagger' }, [
     el('div', { class: 'check-wrap' }, svg),
-    el('h2', { class: 'thanks-title' }, 'Thanks — here is your AI Readiness score.'),
-    el('p', { class: 'thanks-sub' }, 'See where you land on the 2026 framework, then open the dashboard to see how you compare to your peers.'),
-    scoreBlock,
-    tierLegend,
-    compareCard,
+    el('h2', { class: 'thanks-title' }, t('Thank you!')),
+    el('p', { class: 'thanks-sub' }, t('Check your email for your AI Maturity Score.')),
   ]);
   renderScreen(card);
 }

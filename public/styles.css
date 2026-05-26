@@ -679,6 +679,43 @@ body {
 
 /* Intro screen */
 .intro-card { text-align: center; padding: 56px 36px 48px; }
+
+/* Language toggle pill — appears at the top of the intro card only */
+.lang-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  margin-bottom: 26px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+}
+.lang-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+.lang-btn:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+.lang-btn.active {
+  background: rgba(63, 184, 255, 0.20);
+  color: #c8e9ff;
+}
+.lang-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(63, 184, 255, 0.28);
+}
+
 .intro-eyebrow {
   display: inline-block;
   font-size: 11px;
