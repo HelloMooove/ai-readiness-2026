@@ -1,0 +1,260 @@
+/* Admin section — intentionally distinct from the public form. Clean,
+   functional, readable. No animations, no glow effects. */
+
+.admin-root {
+  min-height: 100vh;
+  background: #0b0e15;
+  color: #e6eaf2;
+  font-family: 'DM Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.admin-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-brand {
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 15px;
+}
+
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  color: #a8b0c0;
+}
+
+.admin-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px 28px;
+}
+
+.admin-card h1 {
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+
+.admin-card p {
+  color: #c2c9d6;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+
+.admin-muted {
+  color: #8b93a4;
+  font-size: 13px;
+}
+
+.admin-code {
+  background: #050810;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 13px;
+  color: #b9e5ff;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  margin: 14px 0;
+}
+
+.admin-progress {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-progress li {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #c2c9d6;
+}
+
+.admin-progress li.done {
+  color: #80e7b3;
+  border-color: rgba(128, 231, 179, 0.22);
+  background: rgba(128, 231, 179, 0.06);
+}
+
+.admin-progress li.done::before {
+  content: '✓  ';
+  font-weight: 700;
+}
+
+.admin-btn {
+  appearance: none;
+  border: none;
+  background: #3fb8ff;
+  color: #051018;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 120ms ease;
+}
+
+.admin-btn:hover {
+  filter: brightness(1.08);
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #c2c9d6;
+}
+
+/* Login / auth pages */
+
+.admin-auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.admin-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 36px 32px;
+}
+
+.admin-auth-card h1 {
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  margin: 0 0 8px;
+}
+
+.admin-auth-sub {
+  color: #a8b0c0;
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 22px;
+}
+
+.admin-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-auth-form label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b93a4;
+  font-weight: 600;
+}
+
+.admin-auth-form input {
+  appearance: none;
+  background: #050810;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #e6eaf2;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.admin-auth-form input:focus {
+  outline: none;
+  border-color: #3fb8ff;
+  box-shadow: 0 0 0 3px rgba(63, 184, 255, 0.18);
+}
+
+.admin-auth-form button {
+  margin-top: 6px;
+  appearance: none;
+  border: none;
+  background: #3fb8ff;
+  color: #051018;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 120ms ease;
+}
+
+.admin-auth-form button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.admin-auth-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-auth-error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  background: rgba(255, 99, 99, 0.08);
+  border: 1px solid rgba(255, 99, 99, 0.3);
+  border-radius: 8px;
+  color: #ffb3b3;
+  font-size: 13px;
+}
+
+.admin-auth-success {
+  padding: 16px 18px;
+  background: rgba(128, 231, 179, 0.08);
+  border: 1px solid rgba(128, 231, 179, 0.3);
+  border-radius: 10px;
+  color: #c8f5dd;
+}
+
+.admin-auth-success strong {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.admin-auth-success code {
+  color: #b9e5ff;
+}
+
+.admin-auth-loading {
+  color: #8b93a4;
+  font-size: 14px;
+}
