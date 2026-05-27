@@ -16,22 +16,32 @@ export type ComposedEmail = {
   text: string;
 };
 
-// Brand colors — kept inline because most email clients strip <style> blocks.
-const BG = '#0b0e15';
-const SURFACE = '#11151f';
-const BORDER = '#1f2737';
-const TEXT = '#e6eaf2';
-const MUTED = '#a8b0c0';
-const TEAL = '#3FB8FF';
-const TEAL_SOFT = '#1d3a52';
+// MOOOVE brand palette — kept inline because most email clients strip <style>.
+// Brand guidelines (V1.0): 75% Navy + White, 15% Cyan, 5% Blue & Sky, 5% Amber.
+// Amber is "the spice" — never paired with Cyan in the same design block.
+const NAVY      = '#052139'; // Brand main — authority
+const ICE       = '#eff9fe'; // Brand text + secondary background
+const SKY       = '#c7eafb'; // Brand soft accent / separator
+const CYAN      = '#2ac2de'; // Brand accent / CTA / energy
+const ELECTRIC  = '#3c5eab'; // Brand boldness / affirmation
+const AMBER     = '#f6923e'; // Brand warmth — used sparingly
 
-// Per-tier accent colors for the bar chart and the user's tier badge.
+// Email surface derived from the brand
+const BG          = '#01101e';  // Slightly deeper than Navy for the outer canvas
+const SURFACE     = NAVY;       // Card surface
+const SURFACE_INSET = '#03192d'; // Inset blocks (score box, stay-tuned card)
+const BORDER      = '#0d3556';  // Subtle navy/electric tint for separators
+const TEXT        = ICE;        // Body text
+const MUTED       = '#8aa9c0';  // Desaturated ice tone for muted text
+const CYAN_SOFT   = '#0f3447';  // Dark cyan tint for soft accent backgrounds
+
+// Per-tier accent colors mapped to the brand palette.
 const TIER_COLORS: Record<string, string> = {
-  'undecided': '#9099aa',
-  'ignition':  '#f5993a',
-  'momentum':  '#3FB8FF',
-  'mastery':   '#a987ff',
-  'ai-native': '#80e7b3',
+  'undecided': SKY,       // Explorer — soft start
+  'ignition':  AMBER,     // Ignition — warmth, first action
+  'momentum':  CYAN,      // Momentum — energy
+  'mastery':   ELECTRIC,  // Mastery — boldness/ambition
+  'ai-native': ICE,       // AI-Native — clarity, top tier
 };
 
 function copy(lang: EmailLang) {
@@ -102,8 +112,8 @@ function tierInsight(
   if (tier.key === 'undecided') {
     return {
       opening: FR
-        ? 'Votre organisation est actuellement au début de son parcours d’adoption de l’IA.'
-        : 'Your organization is at the early stage of its AI adoption journey.',
+        ? 'Vous êtes actuellement au début de votre parcours d’adoption de l’IA.'
+        : 'You are at the early stage of your AI adoption journey.',
       contextLabel: hasStats ? (FR ? 'La bonne nouvelle :' : 'The good news:') : null,
       contextBody: hasStats
         ? (FR
@@ -125,8 +135,8 @@ function tierInsight(
   if (tier.key === 'ignition') {
     return {
       opening: FR
-        ? 'Votre organisation commence à concrétiser son adoption de l’IA.'
-        : 'Your organization is starting to translate AI adoption into action.',
+        ? 'Vous commencez à concrétiser votre adoption de l’IA.'
+        : 'You are starting to translate AI adoption into action.',
       contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
       contextBody: hasStats
         ? (FR
@@ -148,8 +158,8 @@ function tierInsight(
   if (tier.key === 'momentum') {
     return {
       opening: FR
-        ? 'Votre organisation est en pleine phase d’accélération sur l’IA.'
-        : 'Your organization is in a clear acceleration phase on AI.',
+        ? 'Vous êtes en pleine phase d’accélération sur l’IA.'
+        : 'You are in a clear acceleration phase on AI.',
       contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
       contextBody: hasStats
         ? (FR
@@ -171,8 +181,8 @@ function tierInsight(
   if (tier.key === 'mastery') {
     return {
       opening: FR
-        ? 'Votre organisation se distingue clairement dans son parcours d’adoption de l’IA.'
-        : 'Your organization clearly stands out in its AI adoption journey.',
+        ? 'Vous vous distinguez clairement dans votre parcours d’adoption de l’IA.'
+        : 'You clearly stand out in your AI adoption journey.',
       contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
       contextBody: hasStats
         ? (FR
@@ -194,8 +204,8 @@ function tierInsight(
   // ai-native
   return {
     opening: FR
-      ? 'Votre organisation fait partie des leaders du marché en matière d’IA.'
-      : 'Your organization is among the market leaders in AI.',
+      ? 'Vous faites partie des leaders du marché en matière d’IA.'
+      : 'You are among the market leaders in AI.',
     contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
     contextBody: hasStats
       ? (FR
@@ -239,12 +249,12 @@ function renderInsightHtml(
 
   const contextHtml = ins.contextBody && ins.contextLabel
     ? `<p style="margin:0 0 16px;color:${TEXT};font-size:14px;line-height:1.55;">
-         <strong style="color:${TEAL};">${ins.contextLabel}</strong> ${ins.contextBody}
+         <strong style="color:${CYAN};">${ins.contextLabel}</strong> ${ins.contextBody}
        </p>`
     : '';
 
   return `
-    <p style="color:${MUTED};margin:0 0 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;">${copyFn.insightHeading}</p>
+    <p style="color:${CYAN};margin:0 0 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;">${copyFn.insightHeading}</p>
     <p style="margin:0 0 14px;color:${TEXT};font-size:14px;line-height:1.55;">${ins.opening}</p>
     ${contextHtml}
     <p style="margin:0 0 8px;color:${TEXT};font-size:14px;line-height:1.55;font-weight:600;">${copyFn.comparisonLabel}</p>
@@ -266,12 +276,12 @@ function renderChartHtml(cohort: CohortDistribution | null, userTierKey: string,
   const rows = cohort.buckets
     .map((b) => {
       const width = Math.max(4, Math.round((b.count / maxCount) * 100));
-      const color = TIER_COLORS[b.key] || TEAL;
+      const color = TIER_COLORS[b.key] || CYAN;
       const isMine = b.key === userTierKey;
       const labelStyle = `font-size:13px;color:${TEXT};font-weight:${isMine ? '700' : '500'};white-space:nowrap;padding:8px 10px 8px 0;vertical-align:middle;`;
       const rangeStyle = `font-size:11px;color:${MUTED};display:block;font-weight:400;letter-spacing:.04em;`;
       const youBadge = isMine
-        ? `<span style="background:${TEAL_SOFT};color:${TEAL};font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;margin-left:6px;letter-spacing:.06em;">YOU</span>`
+        ? `<span style="background:${CYAN_SOFT};color:${CYAN};font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;margin-left:6px;letter-spacing:.06em;">YOU</span>`
         : '';
       return `
         <tr>
@@ -296,7 +306,7 @@ function renderChartHtml(cohort: CohortDistribution | null, userTierKey: string,
     .join('');
 
   return `
-    <p style="color:${MUTED};margin:0 0 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;">${copyFn.distHeader}</p>
+    <p style="color:${CYAN};margin:0 0 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;">${copyFn.distHeader}</p>
     <p style="color:${MUTED};margin:0 0 14px;font-size:12px;">${copyFn.respondents(cohort.total)}</p>
     <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
       ${rows}
@@ -307,7 +317,7 @@ function renderChartHtml(cohort: CohortDistribution | null, userTierKey: string,
 export function composeEmail(input: EmailInput): ComposedEmail {
   const c = copy(input.lang);
   const tier = tierForScore(input.score);
-  const tierAccent = TIER_COLORS[tier.key] || TEAL;
+  const tierAccent = TIER_COLORS[tier.key] || CYAN;
 
   const html = `<!DOCTYPE html>
 <html lang="${input.lang}">
@@ -316,14 +326,14 @@ export function composeEmail(input: EmailInput): ComposedEmail {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${c.subject}</title>
 </head>
-<body style="margin:0;padding:0;background:${BG};color:${TEXT};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:${BG};color:${TEXT};font-family:'Aktiv Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;">
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BG};padding:32px 16px;">
     <tr>
       <td align="center">
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:${SURFACE};border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
           <tr>
             <td style="padding:32px 32px 8px;">
-              <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:800;font-size:18px;letter-spacing:.16em;color:${TEXT};">MOOOVE</div>
+              <div style="font-family:'Aktiv Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.01em;color:${TEXT};line-height:1;">mooove</div>
             </td>
           </tr>
           <tr>
@@ -335,9 +345,9 @@ export function composeEmail(input: EmailInput): ComposedEmail {
 
           <tr>
             <td style="padding:28px 32px 0;">
-              <div style="background:#0a0d14;border:1px solid ${BORDER};border-radius:12px;padding:24px;text-align:center;">
-                <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${MUTED};font-weight:600;margin-bottom:8px;">${c.scoreLabel}</div>
-                <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:800;font-size:56px;line-height:1;color:${TEXT};margin-bottom:14px;">${input.score}</div>
+              <div style="background:${SURFACE_INSET};border:1px solid ${BORDER};border-radius:12px;padding:24px;text-align:center;">
+                <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${CYAN};font-weight:700;margin-bottom:8px;">${c.scoreLabel}</div>
+                <div style="font-family:'Aktiv Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:800;font-size:56px;line-height:1;color:${TEXT};margin-bottom:14px;">${input.score}</div>
                 <div>
                   <span style="display:inline-block;padding:6px 14px;border-radius:99px;background:${tierAccent}22;color:${tierAccent};border:1px solid ${tierAccent}55;font-size:13px;font-weight:700;letter-spacing:.04em;">
                     ${tier.icon} ${c.tierLabel}: ${tier.label}
@@ -361,7 +371,7 @@ export function composeEmail(input: EmailInput): ComposedEmail {
 
           <tr>
             <td style="padding:28px 32px 0;">
-              <div style="background:#0a0d14;border:1px solid ${BORDER};border-radius:12px;padding:20px 22px;">
+              <div style="background:${SURFACE_INSET};border:1px solid ${BORDER};border-radius:12px;padding:20px 22px;">
                 <div style="font-size:15px;font-weight:700;color:${TEXT};margin:0 0 8px;">${c.stayTunedTitle}</div>
                 <p style="margin:0 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">${c.stayTunedBody}</p>
                 <ul style="margin:0;padding:0 0 0 18px;color:${TEXT};font-size:13px;line-height:1.7;">
