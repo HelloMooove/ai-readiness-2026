@@ -184,10 +184,10 @@ const FR = {
     'Quelles décisions sont actuellement difficiles à prendre dans votre organisation ?',
   'Do you plan to train your teams on AI usage in 2026?':
     'Prévoyez-vous de former vos équipes à l’utilisation de l’IA en 2026 ?',
-  'What training themes do you want to cover?': 'Quels thèmes de formation souhaitez-vous couvrir ?',
+  'Which AI capabilities would you like your teams to develop?': 'Quelles compétences IA souhaitez-vous que vos équipes développent ?',
   'Why not?': 'Pourquoi pas ?',
-  'What are the must-haves of a solid AI training in 2026?':
-    'Quels sont les indispensables d’une formation IA solide en 2026 ?',
+  'What do you expect from a high-quality AI training experience?':
+    'Qu’attendez-vous d’une expérience de formation IA de qualité ?',
 
   /* --- Option values: Q1 / Q8 / Q15 (yes/no) --- */
   'Yes': 'Oui',
@@ -587,7 +587,7 @@ const QUESTIONS = [
     next: (ans) => (ans === 'Yes' ? 'q16' : 'q17'),
   },
   {
-    id: 'q16', phase: 3, text: 'What training themes do you want to cover?', type: 'multi',
+    id: 'q16', phase: 3, text: 'Which AI capabilities would you like your teams to develop?', type: 'multi',
     airtableField: 'Q16 - AI Training Themes to Cover',
     hint: 'Select all that apply',
     options: [
@@ -611,7 +611,7 @@ const QUESTIONS = [
     next: () => 'q18',
   },
   {
-    id: 'q18', phase: 3, text: 'What are the must-haves of a solid AI training in 2026?', type: 'multi',
+    id: 'q18', phase: 3, text: 'What do you expect from a high-quality AI training experience?', type: 'multi',
     airtableField: 'Q18 - Must-Haves of a Solid AI Training in 2026',
     hint: 'Select up to 2',
     maxSelect: 2,
