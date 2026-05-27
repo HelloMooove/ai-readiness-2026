@@ -19,29 +19,29 @@ export type ComposedEmail = {
 // MOOOVE brand palette — kept inline because most email clients strip <style>.
 // Brand guidelines (V1.0): 75% Navy + White, 15% Cyan, 5% Blue & Sky, 5% Amber.
 // Amber is "the spice" — never paired with Cyan in the same design block.
-const NAVY      = '#052139'; // Brand main — authority
-const ICE       = '#eff9fe'; // Brand text + secondary background
+const NAVY      = '#052139'; // Brand main — text + authority
+const ICE       = '#eff9fe'; // Brand secondary background
 const SKY       = '#c7eafb'; // Brand soft accent / separator
 const CYAN      = '#2ac2de'; // Brand accent / CTA / energy
-const ELECTRIC  = '#3c5eab'; // Brand boldness / affirmation
 const AMBER     = '#f6923e'; // Brand warmth — used sparingly
+// Electric Blue (#3c5eab) intentionally unused per stakeholder direction.
 
-// Email surface derived from the brand
-const BG          = '#01101e';  // Slightly deeper than Navy for the outer canvas
-const SURFACE     = NAVY;       // Card surface
-const SURFACE_INSET = '#03192d'; // Inset blocks (score box, stay-tuned card)
-const BORDER      = '#0d3556';  // Subtle navy/electric tint for separators
-const TEXT        = ICE;        // Body text
-const MUTED       = '#8aa9c0';  // Desaturated ice tone for muted text
-const CYAN_SOFT   = '#0f3447';  // Dark cyan tint for soft accent backgrounds
+// Light-theme email surface
+const BG            = '#f5fafd'; // Very pale sky for the outer canvas
+const SURFACE       = '#ffffff'; // Card surface (white)
+const SURFACE_INSET = ICE;        // Inset blocks (score box, stay-tuned card)
+const BORDER        = SKY;        // Subtle separators and card border
+const TEXT          = NAVY;       // Body text — brand Navy
+const MUTED         = '#5a7188';  // Desaturated navy for muted text
+const CYAN_SOFT     = '#d6f1f7';  // Pale cyan tint for the "YOU" badge on light
 
 // Per-tier accent colors mapped to the brand palette.
 const TIER_COLORS: Record<string, string> = {
   'undecided': SKY,       // Explorer — soft start
   'ignition':  AMBER,     // Ignition — warmth, first action
   'momentum':  CYAN,      // Momentum — energy
-  'mastery':   ELECTRIC,  // Mastery — boldness/ambition
-  'ai-native': ICE,       // AI-Native — clarity, top tier
+  'mastery':   '#1a7d97', // Mastery — deep teal (darker cyan; replaces Electric)
+  'ai-native': NAVY,      // AI-Native — top tier, brand authority
 };
 
 function copy(lang: EmailLang) {
@@ -281,7 +281,7 @@ function renderChartHtml(cohort: CohortDistribution | null, userTierKey: string,
       const labelStyle = `font-size:13px;color:${TEXT};font-weight:${isMine ? '700' : '500'};white-space:nowrap;padding:8px 10px 8px 0;vertical-align:middle;`;
       const rangeStyle = `font-size:11px;color:${MUTED};display:block;font-weight:400;letter-spacing:.04em;`;
       const youBadge = isMine
-        ? `<span style="background:${CYAN_SOFT};color:${CYAN};font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;margin-left:6px;letter-spacing:.06em;">YOU</span>`
+        ? `<span style="background:${CYAN_SOFT};color:${TEXT};font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;margin-left:6px;letter-spacing:.06em;">YOU</span>`
         : '';
       return `
         <tr>
@@ -290,7 +290,7 @@ function renderChartHtml(cohort: CohortDistribution | null, userTierKey: string,
             <span style="${rangeStyle}">${b.rangeLabel}</span>
           </td>
           <td style="padding:8px 0;vertical-align:middle;width:100%;">
-            <table cellpadding="0" cellspacing="0" border="0" style="width:100%;background:${SURFACE};border-radius:6px;overflow:hidden;">
+            <table cellpadding="0" cellspacing="0" border="0" style="width:100%;background:${SURFACE_INSET};border-radius:6px;overflow:hidden;">
               <tr>
                 <td style="width:${width}%;background:${color};height:22px;border-radius:6px;"></td>
                 <td style="width:${100 - width}%;"></td>
@@ -349,7 +349,7 @@ export function composeEmail(input: EmailInput): ComposedEmail {
                 <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${CYAN};font-weight:700;margin-bottom:8px;">${c.scoreLabel}</div>
                 <div style="font-family:'Aktiv Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:800;font-size:56px;line-height:1;color:${TEXT};margin-bottom:14px;">${input.score}</div>
                 <div>
-                  <span style="display:inline-block;padding:6px 14px;border-radius:99px;background:${tierAccent}22;color:${tierAccent};border:1px solid ${tierAccent}55;font-size:13px;font-weight:700;letter-spacing:.04em;">
+                  <span style="display:inline-block;padding:6px 14px;border-radius:99px;background:${tierAccent}33;color:${TEXT};border:1px solid ${tierAccent};font-size:13px;font-weight:700;letter-spacing:.04em;">
                     ${tier.icon} ${c.tierLabel}: ${tier.label}
                   </span>
                 </div>
