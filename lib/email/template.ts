@@ -47,6 +47,14 @@ function copy(lang: EmailLang) {
       distHeader: 'Répartition par tier (cohorte actuelle)',
       respondents: (n: number) => `${n} répondant${n === 1 ? '' : 's'}`,
       noCohort: 'Données de cohorte indisponibles pour le moment.',
+      stayTunedTitle: 'Restez connectés — ce n’est que le début',
+      stayTunedBody: 'Au cours des prochaines semaines, nous partagerons davantage d’analyses et d’opportunités exclusives pour vous aider à mieux comprendre comment l’IA transforme les entreprises aujourd’hui.',
+      stayTunedBullets: [
+        'Des analyses de tendances IA et des insights marché',
+        'Des invitations à des événements et échanges exclusifs',
+        'Des ateliers pratiques autour de l’IA',
+      ],
+      firstWave: 'Vous faites désormais partie de la première vague de participants à l’initiative AI Readiness de MOOOVE.',
       signoff: '— MOOOVE',
     };
   }
@@ -61,6 +69,14 @@ function copy(lang: EmailLang) {
     distHeader: 'Tier distribution (current cohort)',
     respondents: (n: number) => `${n} respondent${n === 1 ? '' : 's'}`,
     noCohort: 'Cohort data is unavailable right now.',
+    stayTunedTitle: 'Stay tuned — more is coming soon',
+    stayTunedBody: 'Over the coming weeks, we’ll be sharing additional insights and exclusive opportunities to help you better understand how AI is transforming businesses today.',
+    stayTunedBullets: [
+      'AI trend analysis and market insights',
+      'Invitations to exclusive events and discussions',
+      'Hands-on practical AI workshops',
+    ],
+    firstWave: 'You are now part of the first wave of participants in the MOOOVE AI Readiness initiative.',
     signoff: '— MOOOVE',
   };
 }
@@ -338,13 +354,31 @@ export function composeEmail(input: EmailInput): ComposedEmail {
           </tr>
 
           <tr>
-            <td style="padding:28px 32px 32px;">
+            <td style="padding:28px 32px 0;">
               ${renderChartHtml(input.cohort, tier.key, c)}
             </td>
           </tr>
 
           <tr>
-            <td style="padding:0 32px 32px;color:${MUTED};font-size:12px;line-height:1.55;">
+            <td style="padding:28px 32px 0;">
+              <div style="background:#0a0d14;border:1px solid ${BORDER};border-radius:12px;padding:20px 22px;">
+                <div style="font-size:15px;font-weight:700;color:${TEXT};margin:0 0 8px;">${c.stayTunedTitle}</div>
+                <p style="margin:0 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">${c.stayTunedBody}</p>
+                <ul style="margin:0;padding:0 0 0 18px;color:${TEXT};font-size:13px;line-height:1.7;">
+                  ${c.stayTunedBullets.map((b) => `<li>${b}</li>`).join('')}
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:20px 32px 0;color:${MUTED};font-size:13px;line-height:1.55;">
+              ${c.firstWave}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:20px 32px 32px;color:${MUTED};font-size:12px;line-height:1.55;">
               <hr style="border:none;border-top:1px solid ${BORDER};margin:0 0 16px;" />
               <div>${c.signoff}</div>
             </td>
@@ -399,6 +433,15 @@ export function composeEmail(input: EmailInput): ComposedEmail {
     }
     lines.push('');
   }
+
+  lines.push(c.stayTunedTitle);
+  lines.push(c.stayTunedBody);
+  for (const b of c.stayTunedBullets) {
+    lines.push(`  • ${b}`);
+  }
+  lines.push('');
+  lines.push(c.firstWave);
+  lines.push('');
   lines.push(c.signoff);
 
   return {
