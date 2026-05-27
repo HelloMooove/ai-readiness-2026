@@ -1293,8 +1293,8 @@ function buildAirtablePayload() {
 const TIERS = [
   {
     key: 'undecided',
-    label: 'Undecided',
-    icon: '❓',
+    label: 'Explorer',
+    icon: '🧭',
     range: '0 – 19',
     profile: 'The Hesitant. No clear stance on AI: negative signals outweigh adoption signals.',
     test: (s) => s <= 19,

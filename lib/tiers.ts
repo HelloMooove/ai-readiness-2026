@@ -14,7 +14,7 @@ export type Tier = {
 };
 
 export const TIERS: Tier[] = [
-  { key: 'undecided', label: 'Undecided', icon: '❓', rangeLabel: '0 – 19',     test: (s) => s <= 19 },
+  { key: 'undecided', label: 'Explorer', icon: '🧭', rangeLabel: '0 – 19',     test: (s) => s <= 19 },
   { key: 'ignition',  label: 'Ignition',  icon: '🔥', rangeLabel: '20 – 44',    test: (s) => s >= 20 && s <= 44 },
   { key: 'momentum',  label: 'Momentum',  icon: '⚙️', rangeLabel: '45 – 74',    test: (s) => s >= 45 && s <= 74 },
   { key: 'mastery',   label: 'Mastery',   icon: '🚀', rangeLabel: '75 – 104',   test: (s) => s >= 75 && s <= 104 },
