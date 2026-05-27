@@ -1,4 +1,4 @@
-import { tierForScore } from '@/lib/tiers';
+import { tierForScore, TIER_ORDER, type Tier } from '@/lib/tiers';
 import type { CohortDistribution } from './cohort';
 
 export type EmailLang = 'en' | 'fr';
@@ -42,6 +42,8 @@ function copy(lang: EmailLang) {
       thanks: 'Merci d’avoir complété le diagnostic MOOOVE AI Readiness.',
       scoreLabel: 'Votre score de maturité IA',
       tierLabel: 'Votre tier',
+      insightHeading: 'Votre position dans la cohorte',
+      comparisonLabel: 'Par rapport aux autres participants :',
       distHeader: 'Répartition par tier (cohorte actuelle)',
       respondents: (n: number) => `${n} répondant${n === 1 ? '' : 's'}`,
       noCohort: 'Données de cohorte indisponibles pour le moment.',
@@ -54,11 +56,187 @@ function copy(lang: EmailLang) {
     thanks: 'Thank you for completing the MOOOVE AI Readiness diagnostic.',
     scoreLabel: 'Your AI Maturity Score',
     tierLabel: 'Your tier',
+    insightHeading: 'Your position in the cohort',
+    comparisonLabel: 'Compared to other participants:',
     distHeader: 'Tier distribution (current cohort)',
     respondents: (n: number) => `${n} respondent${n === 1 ? '' : 's'}`,
     noCohort: 'Cohort data is unavailable right now.',
     signoff: '— MOOOVE',
   };
+}
+
+type TierInsight = {
+  opening: string;
+  contextLabel: string | null;
+  contextBody: string | null;
+  bullets: [string, string];
+};
+
+// Per-tier narrative copy. Stats (pctTier, pctBelow) are injected when the
+// cohort has enough data; otherwise the context line is omitted.
+function tierInsight(
+  lang: EmailLang,
+  tier: Tier,
+  pctTier: number,
+  pctBelow: number,
+  hasStats: boolean,
+): TierInsight {
+  const FR = lang === 'fr';
+
+  if (tier.key === 'undecided') {
+    return {
+      opening: FR
+        ? 'Votre organisation est actuellement au début de son parcours d’adoption de l’IA.'
+        : 'Your organization is at the early stage of its AI adoption journey.',
+      contextLabel: hasStats ? (FR ? 'La bonne nouvelle :' : 'The good news:') : null,
+      contextBody: hasStats
+        ? (FR
+            ? `${pctTier}% des organisations de la cohorte sont encore en phase d’exploration — une opportunité importante pour prendre de l’avance rapidement.`
+            : `${pctTier}% of organizations in the cohort are still in the Explorer phase — a real opportunity to move ahead quickly.`)
+        : null,
+      bullets: FR
+        ? [
+            'vous faites partie des organisations qui commencent à structurer leur réflexion autour de l’IA',
+            'plusieurs opportunités d’amélioration opérationnelle et d’automatisation sont accessibles à ce stade',
+          ]
+        : [
+            'you are among the organizations starting to structure their thinking around AI',
+            'several operational and automation improvement opportunities are accessible at this stage',
+          ],
+    };
+  }
+
+  if (tier.key === 'ignition') {
+    return {
+      opening: FR
+        ? 'Votre organisation commence à concrétiser son adoption de l’IA.'
+        : 'Your organization is starting to translate AI adoption into action.',
+      contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
+      contextBody: hasStats
+        ? (FR
+            ? `Vous avez dépassé ${pctBelow}% de la cohorte — l’IA n’est plus une simple discussion mais une pratique émergente.`
+            : `You are ahead of ${pctBelow}% of the cohort — AI is no longer just a conversation but an emerging practice.`)
+        : null,
+      bullets: FR
+        ? [
+            'des premiers usages sont en place, mais ils restent souvent ad-hoc et non structurés',
+            'le prochain levier consiste à formaliser les pratiques et à mesurer la valeur générée',
+          ]
+        : [
+            'first use cases are in place, but practice remains ad-hoc and unstructured',
+            'the next lever is formalizing practices and measuring the value generated',
+          ],
+    };
+  }
+
+  if (tier.key === 'momentum') {
+    return {
+      opening: FR
+        ? 'Votre organisation est en pleine phase d’accélération sur l’IA.'
+        : 'Your organization is in a clear acceleration phase on AI.',
+      contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
+      contextBody: hasStats
+        ? (FR
+            ? `Vous êtes en avance sur ${pctBelow}% de la cohorte — vos outils et processus IA sont déjà actifs.`
+            : `You are ahead of ${pctBelow}% of the cohort — your AI tools and processes are already live.`)
+        : null,
+      bullets: FR
+        ? [
+            'des cas d’usage concrets sont déployés, avec une valeur visible mais encore inégale',
+            'le prochain levier consiste à structurer la gouvernance et à étendre les déploiements à grande échelle',
+          ]
+        : [
+            'concrete use cases are deployed, with visible but still uneven value',
+            'the next lever is structuring governance and scaling deployments more broadly',
+          ],
+    };
+  }
+
+  if (tier.key === 'mastery') {
+    return {
+      opening: FR
+        ? 'Votre organisation se distingue clairement dans son parcours d’adoption de l’IA.'
+        : 'Your organization clearly stands out in its AI adoption journey.',
+      contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
+      contextBody: hasStats
+        ? (FR
+            ? `Seules ${pctTier}% des organisations atteignent ce niveau — vous êtes en avance sur ${pctBelow}% de la cohorte.`
+            : `Only ${pctTier}% of organizations reach this level — you are ahead of ${pctBelow}% of the cohort.`)
+        : null,
+      bullets: FR
+        ? [
+            'l’IA est intégrée à vos opérations et vos KPIs sont suivis en continu',
+            'le prochain levier porte sur la gouvernance et l’avantage compétitif durable',
+          ]
+        : [
+            'AI is embedded in your operations and your KPIs are tracked continuously',
+            'the next lever is governance and durable competitive advantage',
+          ],
+    };
+  }
+
+  // ai-native
+  return {
+    opening: FR
+      ? 'Votre organisation fait partie des leaders du marché en matière d’IA.'
+      : 'Your organization is among the market leaders in AI.',
+    contextLabel: hasStats ? (FR ? 'Le contexte :' : 'The context:') : null,
+    contextBody: hasStats
+      ? (FR
+          ? `Seules ${pctTier}% des organisations atteignent ce niveau — l’IA est au cœur de votre modèle opérationnel.`
+          : `Only ${pctTier}% of organizations reach this level — AI is at the core of your operating model.`)
+      : null,
+    bullets: FR
+      ? [
+          'vos workflows, décisions et produits sont alimentés par l’IA',
+          'la compétition se joue désormais sur la capacité IA, pas sur le rattrapage',
+        ]
+      : [
+          'your workflows, decisions, and products are powered by AI',
+          'the competition is now on AI capability, not catching up',
+        ],
+  };
+}
+
+function renderInsightHtml(
+  tier: Tier,
+  cohort: CohortDistribution | null,
+  copyFn: ReturnType<typeof copy>,
+  lang: EmailLang,
+): string {
+  // Need at least 3 respondents before quoting cohort percentages (otherwise
+  // stats like "100% are in this phase" are misleading at n=1 or n=2).
+  const hasStats = !!cohort && cohort.total >= 3;
+  let pctTier = 0;
+  let pctBelow = 0;
+  if (hasStats && cohort) {
+    const tierCount = cohort.buckets.find((b) => b.key === tier.key)?.count ?? 0;
+    pctTier = Math.round((100 * tierCount) / cohort.total);
+    const userIdx = TIER_ORDER.indexOf(tier.key);
+    const belowCount = cohort.buckets
+      .filter((b) => TIER_ORDER.indexOf(b.key) < userIdx)
+      .reduce((sum, b) => sum + b.count, 0);
+    pctBelow = Math.round((100 * belowCount) / cohort.total);
+  }
+
+  const ins = tierInsight(lang, tier, pctTier, pctBelow, hasStats);
+
+  const contextHtml = ins.contextBody && ins.contextLabel
+    ? `<p style="margin:0 0 16px;color:${TEXT};font-size:14px;line-height:1.55;">
+         <strong style="color:${TEAL};">${ins.contextLabel}</strong> ${ins.contextBody}
+       </p>`
+    : '';
+
+  return `
+    <p style="color:${MUTED};margin:0 0 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;">${copyFn.insightHeading}</p>
+    <p style="margin:0 0 14px;color:${TEXT};font-size:14px;line-height:1.55;">${ins.opening}</p>
+    ${contextHtml}
+    <p style="margin:0 0 8px;color:${TEXT};font-size:14px;line-height:1.55;font-weight:600;">${copyFn.comparisonLabel}</p>
+    <ul style="margin:0;padding:0 0 0 18px;color:${MUTED};font-size:13px;line-height:1.6;">
+      <li style="margin-bottom:6px;">${ins.bullets[0]}</li>
+      <li>${ins.bullets[1]}</li>
+    </ul>
+  `;
 }
 
 // Email-safe HTML chart: pure table layout with inline styles. Each tier
@@ -154,6 +332,12 @@ export function composeEmail(input: EmailInput): ComposedEmail {
           </tr>
 
           <tr>
+            <td style="padding:28px 32px 0;">
+              ${renderInsightHtml(tier, input.cohort, c, input.lang)}
+            </td>
+          </tr>
+
+          <tr>
             <td style="padding:28px 32px 32px;">
               ${renderChartHtml(input.cohort, tier.key, c)}
             </td>
@@ -182,6 +366,31 @@ export function composeEmail(input: EmailInput): ComposedEmail {
     `${c.tierLabel}: ${tier.label} (${tier.rangeLabel})`,
     '',
   ];
+
+  // Insight block — same copy as HTML, in plain text.
+  const hasStats = !!input.cohort && input.cohort.total >= 3;
+  let pctTier = 0;
+  let pctBelow = 0;
+  if (hasStats && input.cohort) {
+    const tierCount = input.cohort.buckets.find((b) => b.key === tier.key)?.count ?? 0;
+    pctTier = Math.round((100 * tierCount) / input.cohort.total);
+    const userIdx = TIER_ORDER.indexOf(tier.key);
+    const belowCount = input.cohort.buckets
+      .filter((b) => TIER_ORDER.indexOf(b.key) < userIdx)
+      .reduce((sum, b) => sum + b.count, 0);
+    pctBelow = Math.round((100 * belowCount) / input.cohort.total);
+  }
+  const ins = tierInsight(input.lang, tier, pctTier, pctBelow, hasStats);
+  lines.push(c.insightHeading.toUpperCase());
+  lines.push(ins.opening);
+  if (ins.contextLabel && ins.contextBody) {
+    lines.push(`${ins.contextLabel} ${ins.contextBody}`);
+  }
+  lines.push(c.comparisonLabel);
+  lines.push(`  • ${ins.bullets[0]}`);
+  lines.push(`  • ${ins.bullets[1]}`);
+  lines.push('');
+
   if (input.cohort && input.cohort.total > 0) {
     lines.push(`${c.distHeader} — ${c.respondents(input.cohort.total)}`);
     for (const b of input.cohort.buckets) {
