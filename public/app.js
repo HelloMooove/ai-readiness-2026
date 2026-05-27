@@ -194,7 +194,7 @@ const FR = {
   'No': 'Non',
 
   /* --- Q2: frequency --- */
-  'Always': 'Toujours',
+  'Always': 'Quotidiennement',
   'Sometimes': 'Parfois',
   'Rarely': 'Rarement',
   'Never': 'Jamais',
@@ -215,7 +215,7 @@ const FR = {
   'Automating repetitive tasks': 'Automatiser les tâches répétitives',
   'Creating AI workflows or agents': 'Créer des workflows ou agents IA',
   'Connecting tools and systems': 'Connecter des outils et systèmes',
-  'Using AI across my organization': 'Déployer l’IA dans toute l’organisation',
+  'Using AI across my organization': 'L’IA est utilisée dans mon entreprise',
   "I don't use AI for work yet": 'Je n’utilise pas encore l’IA au travail',
 
   /* --- Q4: conversational AI tools (mostly proper nouns; kept as-is) --- */
