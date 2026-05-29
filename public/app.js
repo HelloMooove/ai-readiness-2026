@@ -1221,6 +1221,8 @@ async function submitForm(btn) {
     state.submitting = false;
     __draftSubmitted = true;
     if (__draftTimer) { clearTimeout(__draftTimer); __draftTimer = null; }
+    // Meta Pixel — form completion conversion
+    if (typeof window.fbq === 'function') window.fbq('track', 'Lead');
     transitionTo('thanks', { checkPhase: false });
   } catch (err) {
     state.submitting = false;
