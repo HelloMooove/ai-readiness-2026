@@ -140,6 +140,11 @@ const FR = {
   'AI Tomorrow': 'L’IA demain',
   'Contact Details': 'Vos coordonnées',
 
+  /* --- Email capture (first step) --- */
+  "Let's start with your email.": 'Commençons par votre e-mail.',
+  "We'll save your progress and send your AI Readiness score here when you finish.":
+    'Nous enregistrons votre progression et vous enverrons votre score AI Readiness ici une fois terminé.',
+
   /* --- Contact form --- */
   'Almost done.': 'Presque terminé.',
   'Just a few details so we can save your result and show you your AI Readiness score.':
@@ -812,6 +817,7 @@ async function transitionTo(nextId, opts = {}) {
   }
 
   if (nextId === 'intro') renderIntro();
+  else if (nextId === 'email') renderEmail();
   else if (nextId === 'contact') renderContact();
   else if (nextId === 'thanks') renderThanks();
   else renderQuestion(nextId);
@@ -844,7 +850,7 @@ function renderIntro() {
       el('button', {
         class: 'btn-primary',
         type: 'button',
-        onclick: (e) => { pulseBtn(e.currentTarget); setTimeout(() => transitionTo('q1'), 180); },
+        onclick: (e) => { pulseBtn(e.currentTarget); setTimeout(() => transitionTo('email'), 180); },
       }, [t('Start the diagnostic'), arrowSVG()])
     ]),
     el('div', { class: 'intro-meta' }, [
@@ -1101,6 +1107,68 @@ function goBack() {
   transitionTo(prev, { checkPhase: false });
 }
 
+/* ---------- Email capture (first step) ----------
+   Collected up-front so partial / dropped-off submissions still carry an
+   email we can follow up on. The remaining contact details (name, phone)
+   are gathered on the contact screen at the end. This screen is deliberately
+   NOT one of the numbered QUESTIONS — Q1 stays "Are you AI literate?" and the
+   question numbering is unaffected. */
+
+function renderEmail() {
+  const c = state.contact;
+
+  const input = el('input', {
+    class: 'input',
+    type: 'email',
+    value: c.email || '',
+    autocomplete: 'email',
+    placeholder: '',
+    oninput: (e) => {
+      state.contact.email = e.target.value;
+      const btn = document.getElementById('email-continue-btn');
+      if (btn) {
+        if (isValidEmail(state.contact.email)) btn.removeAttribute('disabled');
+        else btn.setAttribute('disabled', '');
+      }
+      e.target.classList.remove('invalid');
+      scheduleDraftSave();
+    },
+  });
+  input.dataset.key = 'email';
+
+  const card = el('div', { class: 'card stagger' }, [
+    el('h2', { class: 'q-text' }, t("Let's start with your email.")),
+    el('p', { class: 'intro-msg' },
+      t("We'll save your progress and send your AI Readiness score here when you finish.")),
+
+    el('div', { class: 'input-grid' }, [
+      el('div', { class: 'field full' }, [
+        el('label', {}, t('Email Address') + ' *'),
+        input,
+      ]),
+    ]),
+
+    el('div', { class: 'btn-row' }, [
+      el('button', {
+        class: 'btn-primary',
+        type: 'button',
+        id: 'email-continue-btn',
+        disabled: !isValidEmail(c.email || ''),
+        onclick: (e) => {
+          if (!isValidEmail(state.contact.email || '')) { input.classList.add('invalid'); return; }
+          pulseBtn(e.currentTarget);
+          // Flush the email now so a drop-off right after this step is still captured.
+          saveDraftNow();
+          state.history.push('email');
+          setTimeout(() => transitionTo('q1'), 200);
+        },
+      }, [t('Continue'), arrowSVG()]),
+    ]),
+  ]);
+
+  renderScreen(card);
+}
+
 /* ---------- Contact screen ---------- */
 
 function renderContact() {
@@ -1114,7 +1182,6 @@ function renderContact() {
     el('div', { class: 'input-grid' }, [
       field(t('First Name'), 'firstName', 'text', c.firstName, true),
       field(t('Last Name'), 'lastName', 'text', c.lastName, true),
-      field(t('Email Address'), 'email', 'email', c.email, true, 'full'),
       field(t('Phone Number (optional)'), 'phone', 'tel', c.phone, false, 'full'),
     ]),
 
@@ -1181,8 +1248,7 @@ async function submitForm(btn) {
   if (!contactValid()) {
     document.querySelectorAll('.input').forEach(inp => {
       const k = inp.dataset.key;
-      if (k === 'email' && !isValidEmail(state.contact.email || '')) inp.classList.add('invalid');
-      else if ((k === 'firstName' || k === 'lastName') && !(state.contact[k] || '').trim()) inp.classList.add('invalid');
+      if ((k === 'firstName' || k === 'lastName') && !(state.contact[k] || '').trim()) inp.classList.add('invalid');
     });
     return;
   }
@@ -1364,9 +1430,9 @@ document.addEventListener('keydown', (e) => {
   const q = QMAP[state.currentId];
   // For text fields and inputs, let default behavior happen
   if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
-    if (e.target.tagName === 'INPUT' && state.currentId === 'contact') {
+    if (e.target.tagName === 'INPUT' && (state.currentId === 'contact' || state.currentId === 'email')) {
       e.preventDefault();
-      const btn = document.getElementById('submit-btn');
+      const btn = document.getElementById(state.currentId === 'email' ? 'email-continue-btn' : 'submit-btn');
       if (btn && !btn.hasAttribute('disabled')) btn.click();
     }
     return;
