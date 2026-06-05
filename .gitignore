@@ -5,6 +5,10 @@ out/
 build/
 *.tsbuildinfo
 
+# Python virtualenv
+.venv/
+venv/
+
 # Env files (keep secrets out of git — set them in Vercel)
 .env
 .env.local

@@ -16,7 +16,11 @@ export default function Home() {
         <header className="banner" role="banner">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/banner.png"
+            src="/banner.webp"
+            width={1600}
+            height={535}
+            fetchPriority="high"
+            decoding="async"
             alt="MOOOVE — Navigating the AI wave. MOOOVE | ALIGN | BUILD | SCALE."
           />
         </header>
