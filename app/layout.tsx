@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#080C14',
+  themeColor: '#052139',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -25,8 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Brand type: one grotesque family, two weights (Aktiv Grotesk per the
+            MOOOVE identity). Hanken Grotesk is the web-loaded substitute. */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
 
