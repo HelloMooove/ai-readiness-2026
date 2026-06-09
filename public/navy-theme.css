@@ -1,0 +1,109 @@
+/* =============================================================
+   MOOOVE — FLAT NAVY THEME (text banner)
+   Loaded after styles.css on the public form (app/page.tsx).
+   - Whole page: plain Navy #052139, no gradient, no aurora/grain.
+   - Banner: image removed, rebuilt as live text.
+   - "AI READINESS STARTS HERE" → light Ice pill.
+   ============================================================= */
+
+/* ---- Plain Navy canvas, edge to edge ---- */
+html, body { background: #052139; }
+body {
+  background: #052139;          /* flat — overrides the radial gradient */
+  background-attachment: initial;
+}
+.bg-glow, .bg-noise { display: none; }   /* "plain Navy everywhere" */
+
+/* ---- Text banner (replaces the image) ---- */
+/* Tight vertical rhythm so the hero + intro card fit in one screen (no scroll). */
+.banner-text {
+  text-align: center;
+  padding: clamp(12px, 2.5vw, 22px) 16px clamp(8px, 1.5vw, 14px);
+}
+
+/* Light Ice pill — matches the second screenshot */
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #eff9fe;
+  color: #052139;
+  font-weight: 700;
+  font-size: clamp(11px, 1.4vw, 13px);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+}
+.hero-pill-icon { color: #2ac2de; font-size: 1.15em; line-height: 0; }
+
+/* Wordmark */
+.hero-wordmark {
+  margin: clamp(12px, 2.4vw, 20px) 0 0;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: clamp(44px, 8vw, 92px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+/* Tagline + sub */
+.hero-tagline {
+  margin: clamp(2px, 0.8vw, 8px) 0 0;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: clamp(22px, 4.2vw, 40px);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  color: #2ac2de;
+}
+.hero-sub {
+  margin: clamp(8px, 1.4vw, 13px) auto 0;
+  max-width: none;
+  white-space: nowrap;          /* keep it on a single line */
+  font-size: clamp(13px, 1.9vw, 19px);
+  line-height: 1.4;
+  color: rgba(239, 249, 254, 0.82);
+}
+.hero-sub em { color: #2ac2de; font-style: normal; }
+/* Allow it to wrap again on narrow screens so it can't overflow horizontally */
+@media (max-width: 600px) {
+  .hero-sub { white-space: normal; max-width: 460px; }
+}
+
+/* Pillars row: MOOOVE | ALIGN | BUILD | SCALE */
+.hero-pillars {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2.5vw, 26px);
+  margin: clamp(12px, 2.2vw, 20px) 0 0;
+  font-weight: 600;
+  font-size: clamp(12px, 1.5vw, 16px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c7eafb;
+}
+.hero-pillars i {
+  font-style: normal;
+  color: rgba(42, 194, 222, 0.55);
+  font-weight: 400;
+}
+
+/* ---- Card sits just below the text banner (no image overlap) ---- */
+.app { margin-top: clamp(12px, 2vw, 18px); }
+@media (max-width: 900px) { .app { margin-top: 16px; } }
+@media (max-width: 640px) { .app { margin-top: 14px; } }
+
+/* Trim the intro card's inner padding so the CTA + meta stay above the fold */
+.intro-card { padding: clamp(26px, 3.5vw, 38px) 36px clamp(22px, 3vw, 30px); }
+@media (max-width: 640px) { .intro-card { padding: 28px 22px 24px; } }
+
+/* Pull the top of the page up a touch */
+.container { padding-top: 0; }
+
+/* Intro subtitle: widen so it lays out on two lines (pulls "2026." up) */
+.intro-sub { max-width: 640px; }

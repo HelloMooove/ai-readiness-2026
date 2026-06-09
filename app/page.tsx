@@ -1,28 +1,40 @@
 import Script from 'next/script';
 
-// Public AI Readiness form. The form is a self-contained vanilla JS app
-// living at /public/app.js that mounts itself into #app on load. The JSX
-// here mirrors the original index.html exactly so app.js works unchanged.
+// Public AI Readiness form. Flat-Navy design with a live text banner (no image).
+// The form itself is a self-contained vanilla JS app at /public/app.js that
+// mounts into #app on load. Styling: styles.css (base) + navy-theme.css (flat
+// Navy canvas + text banner).
 export default function Home() {
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-css-tags */}
       <link rel="stylesheet" href="/styles.css" />
-
-      <div className="bg-glow" aria-hidden="true"></div>
-      <div className="bg-noise" aria-hidden="true"></div>
+      {/* eslint-disable-next-line @next/next/no-css-tags */}
+      <link rel="stylesheet" href="/navy-theme.css" />
 
       <div className="container">
-        <header className="banner" role="banner">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/banner.webp"
-            width={1600}
-            height={535}
-            fetchPriority="high"
-            decoding="async"
-            alt="MOOOVE — Navigating the AI wave. MOOOVE | ALIGN | BUILD | SCALE."
-          />
+        <header className="banner banner-text" role="banner">
+          <div className="hero-pill">
+            <span className="hero-pill-icon" aria-hidden="true">✦</span>
+            AI Readiness Starts Here
+          </div>
+
+          <h1 className="hero-wordmark">MOOOVE</h1>
+          <p className="hero-tagline">Find your AI readiness score</p>
+          <p className="hero-sub">
+            Navigating the AI wave requires you to understand <em>where</em> you
+            start from.
+          </p>
+
+          <div className="hero-pillars" aria-hidden="true">
+            <span>MOOOVE</span>
+            <i>|</i>
+            <span>ALIGN</span>
+            <i>|</i>
+            <span>BUILD</span>
+            <i>|</i>
+            <span>SCALE</span>
+          </div>
         </header>
 
         <main id="app" className="app" aria-live="polite"></main>

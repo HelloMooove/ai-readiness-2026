@@ -20,9 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* Preload the LCP banner so it downloads immediately, in parallel with render */}
-        <link rel="preload" as="image" href="/banner.webp" fetchPriority="high" />
-
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         {/* Brand type: one grotesque family, two weights (Aktiv Grotesk per the
